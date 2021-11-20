@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from projects.models.projects import Project, Proposition
+from projects.models.projects import Project, Proposition, Alternative
 from projects.models.tag import Tag
 
 
@@ -13,4 +13,5 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Project, ProjectAdmin)
+admin.site.register(Alternative)
 admin.site.register(Tag)
