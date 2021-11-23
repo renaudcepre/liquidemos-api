@@ -40,7 +40,6 @@ INSTALLED_APPS = [
 
     'apps.users',
 
-    'apps.workspace',
     'apps.projects'
 ]
 

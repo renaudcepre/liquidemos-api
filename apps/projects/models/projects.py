@@ -2,15 +2,12 @@ from django.db import models
 
 from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.projects.models.tag import Tag
-from apps.workspace.models import Workspace
 
 
 class Alternative(DatedModelMixin, models.Model):
     """Alternative contains the real proposition, and can be 'forked' ad another alternative."""
     content = models.TextField()
     proposition = models.ForeignKey('Proposition', on_delete=models.CASCADE)
-
-    #     Todo: votes, comments ...
 
     def __str__(self):
         return f"Alternative {self.id} for  {self.proposition.name}"
@@ -33,7 +30,6 @@ class Project(DatedModelMixin, models.Model):
     from_proposition = models.ForeignKey(Proposition, on_delete=models.PROTECT,
                                          null=True, blank=True,
                                          related_name='proposition')
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag, blank=True)
 
     def __str__(self):
