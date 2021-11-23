@@ -1,15 +1,8 @@
 from django.db import models
 
+from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.projects.models.tag import Tag
 from apps.workspace.models import Workspace
-
-
-class DatedModelMixin(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class Alternative(DatedModelMixin, models.Model):
