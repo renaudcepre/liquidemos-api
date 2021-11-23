@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from workspace.models import Workspace
+from apps.workspace.models import Workspace
 
 admin.site.register(Workspace)
