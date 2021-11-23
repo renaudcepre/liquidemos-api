@@ -27,7 +27,7 @@ class Proposition(models.Model):
 class Project(models.Model):
     """A project contains a number of propositions."""
     name = models.CharField(max_length=64)
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(blank=True)
     from_proposition = models.ForeignKey(Proposition, on_delete=models.PROTECT,
                                          null=True, blank=True,
                                          related_name='proposition')
