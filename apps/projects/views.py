@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 
-from apps.projects.models.projects import Project
+from apps.projects.models import Project
 
 
 def list_projects(request):

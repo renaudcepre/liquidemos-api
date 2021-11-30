@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from apps.projects.models.projects import Project, Proposition, Alternative
-from apps.projects.models.tag import Tag
+from apps.projects.models import Project, Proposition, Alternative, Tag
 
 
 class PropositionInline(admin.TabularInline):
