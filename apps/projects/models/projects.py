@@ -6,7 +6,6 @@ from apps.users.models import User
 
 
 class Alternative(DatedModelMixin, models.Model):
-    """Alternative contains the real proposition, and can be 'forked' ad another alternative."""
     content = models.TextField()
     proposition = models.ForeignKey('Proposition', on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)

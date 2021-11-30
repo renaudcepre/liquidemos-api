@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ project.name }}</h1>
+    {% for prop in project.proposition_set.all %}
+        <p>{{ prop.name }} <span style="font-size: small"> by {{ prop.created_by }} </span></p>
+    {% endfor %}
+{% endblock %}
