@@ -1,0 +1,2 @@
+[MASTER]
+django-settings-module=liquidemos.settings
