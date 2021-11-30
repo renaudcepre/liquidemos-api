@@ -1,0 +1,57 @@
+<header>
+    <div class="head">
+        <div class="title">
+            <span class="tilde_title"> ~ </span>
+            {{ settings.title|default:"Liquidemos" }}
+            <span class="tilde_title"> ~ </span>
+        </div>
+
+    </div>
+    <div class="subheader">
+{#        <span>{{ settings.location }}</span>#}
+{#        {% if last_publication|date %}#}
+{#            <span class="last_publish_date">- DERNIERE PARUTION LE {{ last_publication|date }}</span>#}
+{#        {% endif %}#}
+    </div>
+
+    <div class="menu">
+        <a
+                class="menu-item {% if request.path == '/' %}is-active{% endif %}"
+{#                href={% url "admin" %}#}
+        >
+            Home
+        </a>
+        <div class="menu-div"></div>
+
+        <a
+                class="menu-item {% if request.path == '/articles/' %}is-active{% endif %}"
+                href={% url "project_list" %}
+        >
+            Projects
+        </a>
+{#        <div class="menu-div"></div>#}
+{##}
+{#        <a#}
+{#                class="menu-item {% if request.path == '/agenda/' %}is-active{% endif %}"#}
+                {#                href={% url "agenda" %}#}
+{#        >#}
+{#            Agenda#}
+{#        </a>#}
+{#        <div class="menu-div"></div>#}
+{##}
+{#        <a#}
+{#                class="menu-item {% if request.path == '/contribute/' %}is-active{% endif %}"#}
+                {#                href={% url "contribute" %}#}
+{#        >#}
+{#            Contribuer#}
+{#        </a>#}
+{#        <div class="menu-div"></div>#}
+{##}
+{#        <a#}
+{#                class="menu-item {% if request.path == '/contact/' %}is-active{% endif %}"#}
+                {#                href={% url "contact" %}#}
+{#        >#}
+{#            Contact#}
+{#        </a>#}
+    </div>
+</header>
