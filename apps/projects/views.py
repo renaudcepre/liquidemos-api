@@ -8,6 +8,6 @@ def list_projects(request):
     return render(request, 'project_list.html', context={'projects': projects})
 
 
-def project_detail(request, id):
-    project = get_object_or_404(Project, pk=id)
+def project_detail(request, slug):
+    project = get_object_or_404(Project, slug=slug)
     return render(request, 'project_detail.html', context={'project': project})

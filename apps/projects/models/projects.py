@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.projects.models.tag import Tag
@@ -30,10 +31,15 @@ class Project(DatedModelMixin, models.Model):
     description = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    slug = models.SlugField(blank=True)
     from_proposition = models.ForeignKey(Proposition, on_delete=models.PROTECT,
                                          null=True, blank=True,
                                          related_name='proposition')
     tags = models.ManyToManyField(Tag, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Project {self.name}"
