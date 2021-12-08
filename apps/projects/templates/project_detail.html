@@ -1,8 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{{ project.name }}</h1>
-    {% for prop in project.proposition_set.all %}
-        <p>{{ prop.name }} <span style="font-size: small"> by {{ prop.created_by }} </span></p>
-    {% endfor %}
+    <div class="content">
+            <h1>{{ project.name }}</h1>
+
+            {% for prop in project.proposition_set.all %}
+                <div class="project">
+                    <p><span style="font-weight: bold">{{ prop.name }} </span>
+                    <span style="font-size: small"> by {{ prop.created_by }} </span>
+                    <span style="font-size: smaller"> [ {{ prop.alternative_set.count }} alternatives  ]</span>
+                </p>
+                <p>{{ prop.alternative_set.first.content }}</p>
+                </div>
+            {% endfor %}
+
+    </div>
 {% endblock %}

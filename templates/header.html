@@ -1,9 +1,7 @@
 <header>
     <div class="head">
         <div class="title">
-            <span class="tilde_title"> ~ </span>
             {{ settings.title|default:"Liquidemos" }}
-            <span class="tilde_title"> ~ </span>
         </div>
 
     </div>
@@ -29,14 +27,14 @@
         >
             Projects
         </a>
-{#        <div class="menu-div"></div>#}
-{##}
-{#        <a#}
-{#                class="menu-item {% if request.path == '/agenda/' %}is-active{% endif %}"#}
-                {#                href={% url "agenda" %}#}
-{#        >#}
-{#            Agenda#}
-{#        </a>#}
+        <div class="menu-div"></div>
+
+        <a
+                class="menu-item {% if request.path == '/agenda/' %}is-active{% endif %}"
+{#                                href={% url "agenda" %}#}
+        >
+            Account
+        </a>
 {#        <div class="menu-div"></div>#}
 {##}
 {#        <a#}
