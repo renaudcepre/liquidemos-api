@@ -1,11 +1,9 @@
-
 from apps.commons.management.base import CreateDataBaseCommand
 
 from apps.users.factories import UserFactory
 
 
 class Command(CreateDataBaseCommand):
-
     help = 'Create few users'
 
     def handle(self, *args, **options):

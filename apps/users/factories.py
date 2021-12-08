@@ -3,7 +3,6 @@ from faker import Faker
 
 from . import models
 
-
 fake = Faker(['fr'])
 
 
