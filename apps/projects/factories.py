@@ -3,7 +3,7 @@ from faker import Faker
 
 from . import models
 
-fake = Faker(['fr'])
+fake = Faker()
 
 
 class AlternativeFactory(factory.django.DjangoModelFactory):
