@@ -2,17 +2,20 @@
 
 {% block content %}
     <div class="content">
-            <h1>{{ project.name }}</h1>
+        <h1>{{ project.name }}</h1>
 
-            {% for prop in project.proposition_set.all %}
-                <div class="project">
-                    <p><span style="font-weight: bold">{{ prop.name }} </span>
+        {% for prop in project.proposition_set.all %}
+            <div class="project">
+                <p>
+                    <a href={% url proposition_detail id=prop.id %}>
+                        <span style="font-weight: bold">{{ prop.name }} </span>
+                    </a>
                     <span style="font-size: small"> by {{ prop.created_by }} </span>
                     <span style="font-size: smaller"> [ {{ prop.alternative_set.count }} alternatives  ]</span>
                 </p>
                 <p>{{ prop.alternative_set.first.content }}</p>
-                </div>
-            {% endfor %}
+            </div>
+        {% endfor %}
 
     </div>
 {% endblock %}

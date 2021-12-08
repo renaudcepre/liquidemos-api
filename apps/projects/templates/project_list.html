@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="content">
+        {% for project in projects %}
+            <div class="project">
+
+                <a href={% url "project_detail" slug=project.slug %}>
+                    <h4>{{ project.name }}</h4>
+                    <p style="font-size: smaller">by {{ project.created_by }}</p>
+                </a>
+                {% for prop in project.proposition_set.all %}
+                    <p class="proposition-name">{{ prop.name }} <span
+                            style="font-size: smaller"> by {{ prop.created_by }} </span></p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
