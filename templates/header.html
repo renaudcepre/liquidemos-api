@@ -1,55 +1,49 @@
 <header>
-    <div class="head">
-        <div class="title">
-            {{ settings.title|default:"Liquidemos" }}
+{#    <div class="head">#}
+{#        <div class="title">#}
+{#            {{ settings.title|default:"Liquidemos" }}#}
+{#        </div>#}
+{##}
+{#    </div>#}
+
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <div class="navbar-item">
+                <h1 class="is-size-4">Liquidemos</h1>
+            </div>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
         </div>
 
-    </div>
-    <div class="subheader">
-{#        <span>{{ settings.location }}</span>#}
-{#        {% if last_publication|date %}#}
-{#            <span class="last_publish_date">- DERNIERE PARUTION LE {{ last_publication|date }}</span>#}
-{#        {% endif %}#}
-    </div>
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item">
+                    Home
+                </a>
 
-    <div class="menu">
-        <a
-                class="menu-item {% if request.path == '/' %}is-active{% endif %}"
-{#                href={% url "admin" %}#}
-        >
-            Home
-        </a>
-        <div class="menu-div"></div>
+                <a class="navbar-item" href={% url 'project_list' %}>
+                    Projects
+                </a>
 
-        <a
-                class="menu-item {% if request.path == '/articles/' %}is-active{% endif %}"
-                href={% url "project_list" %}
-        >
-            Projects
-        </a>
-        <div class="menu-div"></div>
+            </div>
 
-        <a
-                class="menu-item {% if request.path == '/agenda/' %}is-active{% endif %}"
-{#                                href={% url "agenda" %}#}
-        >
-            Account
-        </a>
-{#        <div class="menu-div"></div>#}
-{##}
-{#        <a#}
-{#                class="menu-item {% if request.path == '/contribute/' %}is-active{% endif %}"#}
-                {#                href={% url "contribute" %}#}
-{#        >#}
-{#            Contribuer#}
-{#        </a>#}
-{#        <div class="menu-div"></div>#}
-{##}
-{#        <a#}
-{#                class="menu-item {% if request.path == '/contact/' %}is-active{% endif %}"#}
-                {#                href={% url "contact" %}#}
-{#        >#}
-{#            Contact#}
-{#        </a>#}
-    </div>
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons">
+                        <a class="button is-primary">
+                            <strong>Sign up</strong>
+                        </a>
+                        <a class="button is-light">
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
 </header>

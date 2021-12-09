@@ -1,21 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="content">
-        <h1>{{ project.name }}</h1>
 
-        {% for prop in project.proposition_set.all %}
-            <div class="project">
-                <p>
-                    <a href={% url proposition_detail id=prop.id %}>
-                        <span style="font-weight: bold">{{ prop.name }} </span>
-                    </a>
-                    <span style="font-size: small"> by {{ prop.created_by }} </span>
-                    <span style="font-size: smaller"> [ {{ prop.alternative_set.count }} alternatives  ]</span>
-                </p>
-                <p>{{ prop.alternative_set.first.content }}</p>
-            </div>
-        {% endfor %}
+    <div class="lq-content">
+        <div class="section">
+            <h1 class="title">{{ project.name }}</h1>
+            <p class="subtitle">{{ project.description }}</p>
+            <div class="dropdown-divider"></div>
+            <h4 class="title is-4">Proposition{{ project.proposition_set.count|pluralize }}: </h4>
+            {% for proposition in project.proposition_set.all %}
+                <div class="box">
+                    <h6 class="title is-6">{{ proposition.name }}</h6>
+                    <p> {{ proposition.alternative_set.first.content }}
+                        {% with others=proposition.alternative_set.count|add:"-1" %}
+                            {% if others > 0 %}
+                                <span style="white-space: nowrap"
+                                      class="has-text-grey-light">
+                                    {{ others }} other{{ others|pluralize }} alternative{{ others|pluralize }}.
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+            {% endfor %}
 
+        </div>
     </div>
 {% endblock %}

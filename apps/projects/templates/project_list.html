@@ -1,19 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="content">
-        {% for project in projects %}
-            <div class="project">
-
+    <div class="lq-content">
+        <div class="section">
+            {% for project in projects %}
                 <a href={% url "project_detail" slug=project.slug %}>
-                    <h4>{{ project.name }}</h4>
-                    <p style="font-size: smaller">by {{ project.created_by }}</p>
+                    <div class="box">
+                        <article class="media">
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+                                        <strong>{{ project.name }}</strong> <small>by {{ project.created_by }}</small>
+                                        <small class="has-text-grey-light">,{{ project.created_at }}</small>
+                                        <br>
+                                        {{ project.description }}
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
                 </a>
-                {% for prop in project.proposition_set.all %}
-                    <p class="proposition-name">{{ prop.name }} <span
-                            style="font-size: smaller"> by {{ prop.created_by }} </span></p>
-                {% endfor %}
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
