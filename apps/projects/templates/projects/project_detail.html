@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="lq-content">
+        <div class="section">
+            <h1 class="title">{{ project.name }}</h1>
+            <p class="subtitle">{{ project.description }}</p>
+            <div class="dropdown-divider"></div>
+            <h4 class="title is-4">Proposition{{ project.proposition_set.count|pluralize }}: </h4>
+            <div class="section">
+                {% for proposition in page_obj %}
+                    <div class="box">
+                        <h6 class="title is-6">{{ proposition.name }}</h6>
+                        <p> {{ proposition.alternative_set.first.content }}
+                            {% with others=proposition.alternative_set.count|add:"-1" %}
+                                {% if others > 0 %}
+                                    <span style="white-space: nowrap"
+                                          class="has-text-grey-light">
+                                    {{ others }} other{{ others|pluralize }} alternative{{ others|pluralize }}.
+                                </span>
+                                {% endif %}
+                            {% endwith %}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+            {#        PAGINATION         #}
+            <div class="section">
+                <nav class="pagination is-centered is-rounded is-small" role="navigation" aria-label="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="pagination-previous">Previous</a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-next">Next page</a>
+                    {% endif %}
+
+                    <ul class="pagination-list">
+                        {% if page_obj.has_previous %}
+                            <li><a href="?page=1" class="pagination-link" aria-label="Goto page 1">1</a></li>
+                            <li><span class="pagination-ellipsis">&hellip;</span></li>
+                            <li><a href="?page={{ page_obj.previous_page_number }}" class="pagination-link"
+                                   aria-label="Goto page {{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                            </li>
+                        {% endif %}
+
+                        <li><a class="pagination-link is-current" aria-label="Page {{ page_obj.number }}"
+                               aria-current="page">{{ page_obj.number }}</a></li>
+
+                        {% if page_obj.has_next %}
+                            <li><a href="?page={{ page_obj.next_page_number }}" class="pagination-link"
+                                   aria-label="Goto page {{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                            </li>
+                            <li><span class="pagination-ellipsis">&hellip;</span></li>
+
+                            <li><a href="?page={{ paginator.num_pages }}" class="pagination-link"
+                                   aria-label="Goto last page">{{ paginator.num_pages }}</a></li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
