@@ -3,7 +3,7 @@
 {% block content %}
     <div class="lq-content">
         <div class="section">
-            {% for project in projects %}
+            {% for project in page_obj %}
                 <a href={% url "project_detail" slug=project.slug %}>
                     <div class="box">
                         <article class="media">
@@ -21,6 +21,8 @@
                     </div>
                 </a>
             {% endfor %}
+
+            {% include 'utils/pagination.html' %}
         </div>
     </div>
 {% endblock %}
