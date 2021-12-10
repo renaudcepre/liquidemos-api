@@ -1,7 +1,7 @@
 {% block pagination %}
 
     <div class="section">
-        <nav class="pagination is-centered is-rounded is-small"
+        <nav class="pagination is-centered  is-small"
              role="navigation"
              aria-label="pagination">
 
@@ -12,21 +12,23 @@
 
             {# previous button #}
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-next">Next page</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">Next page</a>
             {% endif %}
 
-            <ul class="pagination-list">
+            {% if paginator.num_pages > 1 %}
+                <ul class="pagination-list">
 
                 {# first and previous pages #}
                 {% if page_obj.has_previous %}
                     <li><a href="?page=1" class="pagination-link" aria-label="Goto page 1">1</a></li>
                     <li><span class="pagination-ellipsis">&hellip;</span></li>
-
-                    <li><a href="?page={{ page_obj.previous_page_number }}"
-                           class="pagination-link"
-                           aria-label="Goto page {{ page_obj.previous_page_number }}">
-                        {{ page_obj.previous_page_number }}
-                    </a></li>
+                    {% if page_obj.previous_page_number != 1 %}
+                        <li><a href="?page={{ page_obj.previous_page_number }}"
+                               class="pagination-link"
+                               aria-label="Goto page {{ page_obj.previous_page_number }}">
+                            {{ page_obj.previous_page_number }}
+                        </a></li>
+                    {% endif %}
                 {% endif %}
 
                 {# current page #}
@@ -35,9 +37,11 @@
 
                 {# last and next pages #}
                 {% if page_obj.has_next %}
-                    <li><a href="?page={{ page_obj.next_page_number }}" class="pagination-link"
-                           aria-label="Goto page {{ page_obj.next_page_number }}">
-                        {{ page_obj.next_page_number }}</a></li>
+                    {% if page_obj.next_page_number != paginator.num_pages %}
+                        <li><a href="?page={{ page_obj.next_page_number }}" class="pagination-link"
+                               aria-label="Goto page {{ page_obj.next_page_number }}">
+                            {{ page_obj.next_page_number }}</a></li>
+                    {% endif %}
                     <li><span class="pagination-ellipsis">&hellip;</span></li>
 
                     <li><a href="?page={{ paginator.num_pages }}"
@@ -46,6 +50,7 @@
                         {{ paginator.num_pages }}
                     </a></li>
                 {% endif %}
+            {% endif %}
 
             </ul>
         </nav>
