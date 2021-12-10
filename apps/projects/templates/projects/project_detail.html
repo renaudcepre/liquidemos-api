@@ -6,6 +6,9 @@
         <div class="section">
             <h1 class="title">{{ project.name }}</h1>
             <p class="subtitle">{{ project.description }}</p>
+            {% if project.from_proposition %}
+                <p class="is-italic"> From proposition <a>{{ project.from_proposition.name }}</a></p>
+            {%  endif %}
             <div class="dropdown-divider"></div>
             <h4 class="title is-4">Proposition{{ project.proposition_set.count|pluralize }}: </h4>
             <div class="section">
