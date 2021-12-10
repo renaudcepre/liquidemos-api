@@ -1,0 +1,90 @@
+- model: users.user
+  pk: 1
+  fields:
+    password: ''
+    last_login: 2021-12-09 08:07:05.899139+00:00
+    is_superuser: true
+    username: rcepre
+    first_name: renaud
+    last_name: cepre
+    email: rcepre@gmail.com
+    is_staff: true
+    is_active: true
+    date_joined: 2021-11-30 12:36:18.523725+00:00
+    groups: []
+    user_permissions: []
+- model: users.user
+  pk: 32
+  fields:
+    password: ''
+    last_login: null
+    is_superuser: false
+    username: iyoung
+    first_name: Veronica
+    last_name: Bentley
+    email: karenperez@garcia.com
+    is_staff: false
+    is_active: true
+    date_joined: 2021-12-10 12:22:47.015983+00:00
+    groups: []
+    user_permissions: []
+- model: users.user
+  pk: 33
+  fields:
+    password: ''
+    last_login: null
+    is_superuser: false
+    username: jonathanbenson
+    first_name: Hailey
+    last_name: Humphrey
+    email: elizabethrobinson@harper.biz
+    is_staff: false
+    is_active: true
+    date_joined: 2021-12-10 12:22:47.024398+00:00
+    groups: []
+    user_permissions: []
+- model: users.user
+  pk: 34
+  fields:
+    password: ''
+    last_login: null
+    is_superuser: false
+    username: thorntontyler
+    first_name: Michael
+    last_name: Hardy
+    email: stucker@gmail.com
+    is_staff: false
+    is_active: true
+    date_joined: 2021-12-10 12:22:47.027823+00:00
+    groups: []
+    user_permissions: []
+- model: users.user
+  pk: 35
+  fields:
+    password: ''
+    last_login: null
+    is_superuser: false
+    username: hillraymond
+    first_name: Danielle
+    last_name: Campbell
+    email: valentinetravis@yahoo.com
+    is_staff: false
+    is_active: true
+    date_joined: 2021-12-10 12:22:47.031431+00:00
+    groups: []
+    user_permissions: []
+- model: users.user
+  pk: 36
+  fields:
+    password: ''
+    last_login: null
+    is_superuser: false
+    username: mcdonaldphilip
+    first_name: Kaitlyn
+    last_name: Brennan
+    email: ericthomas@oliver.com
+    is_staff: false
+    is_active: true
+    date_joined: 2021-12-10 12:22:47.039813+00:00
+    groups: []
+    user_permissions: []

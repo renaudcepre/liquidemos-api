@@ -1,18 +1,12 @@
 <header>
-{#    <div class="head">#}
-{#        <div class="title">#}
-{#            {{ settings.title|default:"Liquidemos" }}#}
-{#        </div>#}
-{##}
-{#    </div>#}
-
     <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <div class="navbar-item">
                 <h1 class="is-size-4">Liquidemos</h1>
             </div>
 
-            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+               data-target="navbarBasicExample">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
@@ -24,11 +18,9 @@
                 <a class="navbar-item">
                     Home
                 </a>
-
                 <a class="navbar-item" href={% url 'project_list' %}>
                     Projects
                 </a>
-
             </div>
 
             <div class="navbar-end">
@@ -45,5 +37,4 @@
             </div>
         </div>
     </nav>
-
 </header>

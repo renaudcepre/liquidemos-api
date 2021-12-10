@@ -1,0 +1,36 @@
+- model: projects.proposition
+  pk: 534
+  fields:
+    name: Un algo de mise en relation des utilisateurs
+    project: 124
+    created_by: 1
+- model: projects.proposition
+  pk: 535
+  fields:
+    name: Un fil d'actualitees
+    project: 124
+    created_by: 1
+- model: projects.proposition
+  pk: 536
+  fields:
+    name: Un systeme de question / response style SA
+    project: 124
+    created_by: 1
+- model: projects.proposition
+  pk: 537
+  fields:
+    name: Notifications automatiques des users
+    project: 124
+    created_by: 1
+- model: projects.proposition
+  pk: 538
+  fields:
+    name: Alertes concerants les pays a visiter bientot pour l'user
+    project: 125
+    created_by: 1
+- model: projects.proposition
+  pk: 539
+  fields:
+    name: Pubs ciblees
+    project: 125
+    created_by: 1
