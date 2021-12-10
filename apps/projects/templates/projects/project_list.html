@@ -2,12 +2,6 @@
 
 {% block content %}
     <div class="lq-content">
-
-        <form method="get" action='#'>
-            <label for="search">Search</label>
-                <input id='search' class="input" type="text" name="search"/>
-            <p><input class="button is-primary" type="submit" value="submit"/>
-        </form>
         <div class="section">
             {% if filter_tags %}
                 <div class="subtitle">Projects with tag{{ filter_tags|pluralize }} :

@@ -12,13 +12,12 @@ class ProjectListView(ListView):
 
     def get_queryset(self):
         filter_by_tags = self.request.GET.get('tags')
+        queryset = Project.objects.all()
         if filter_by_tags:
-            filter_by_tags = filter_by_tags.split(',')
-            return Project.objects.filter(tags__name__in=filter_by_tags)
-        else:
-            return Project.objects.all()
+            queryset = queryset.filter(tags__name__in=filter_by_tags.split(','))
+        return queryset
 
-    def get_context_data(self,  **kwargs):
+    def get_context_data(self, **kwargs):
         context = super(ProjectListView, self).get_context_data(**kwargs)
         filter_by_tags = self.request.GET.get('tags', '')
         if filter_by_tags:
@@ -57,4 +56,3 @@ def proposition_detail(request, id):
                            'original_alt': original_alt,
                            'page_obj': page_obj,
                            'paginator': paginator})
-
