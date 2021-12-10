@@ -2,7 +2,23 @@
 
 {% block content %}
     <div class="lq-content">
+
+        <form method="get" action='#'>
+            <label for="search">Search</label>
+                <input id='search' class="input" type="text" name="search"/>
+            <p><input class="button is-primary" type="submit" value="submit"/>
+        </form>
         <div class="section">
+            {% if filter_tags %}
+                <div class="subtitle">Projects with tag{{ filter_tags|pluralize }} :
+                    {% for tag in filter_tags %}
+                        <a href="?tags={{ tag }}" class="tag is-info is-light is-medium">
+                            {{ tag }}
+                        </a>
+                    {% endfor %}
+                    <a class="is-link is-size-7" href={% url 'project_list' %}>remove filtering</a>
+                </div>
+            {% endif %}
             {% for project in page_obj %}
                 <a class="has-text-grey-dark" href={% url "project_detail" slug=project.slug %}>
                     <div class="box">
@@ -25,12 +41,13 @@
                                         {% endif %}
                                         <br>
                                     <div>
-                                        {% for tag in project.tags.all|slice:10 %}
-                                            <span class="tag is-info is-light">
+                                        {% for tag in project.tags.all %}
+                                            <a href="?tags={{ tag }}" class="tag is-info is-light">
                                                 {{ tag }}
-                                            </span>
+                                            </a>
                                         {% endfor %}
-                                    </div><br>
+                                    </div>
+                                    <br>
                                     {{ project.description }}
                                     </p>
                                 </div>
