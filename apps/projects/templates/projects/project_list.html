@@ -15,15 +15,22 @@
                                         <small class="has-text-grey-light">,{{ project.created_at }}</small>
                                         {% if project.from_proposition %}
                                             <small class="is-italic">
-                                            <br>
-                                            Child of project
-                                            <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
-                                                {{ project.from_proposition.project.name }}
-                                            </a>
-                                            .
+                                                <br>
+                                                Child of project
+                                                <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
+                                                    {{ project.from_proposition.project.name }}
+                                                </a>
+                                                .
                                             </small>
                                         {% endif %}
-                                    <br>
+                                        <br>
+                                    <div>
+                                        {% for tag in project.tags.all|slice:10 %}
+                                            <span class="tag is-info is-light">
+                                                {{ tag }}
+                                            </span>
+                                        {% endfor %}
+                                    </div><br>
                                     {{ project.description }}
                                     </p>
                                 </div>
