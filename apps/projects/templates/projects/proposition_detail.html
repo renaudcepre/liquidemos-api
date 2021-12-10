@@ -1,17 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="g-content">
-            <h1>{{ proposition.name }}</h1>
-            <p> from {{ proposition.project }}</p>
 
-            {% for alt in proposition.alternative_set.all %}
-                <div class="project">
-                    <p>-> {{ alt.content }}
-                    <span style="font-size: small"> by {{ alt.created_by }} </span>
-                </p>
+    <div class="lq-content">
+        <div class="section">
+            <h1 class="title">{{ proposition.name }}</h1>
+
+            <h5 class="title is-5">Original propositon: </h5>
+            <p>{{ original_alt.content|truncatewords:200 }}</p>
+
+            <div class="dropdown-divider"></div>
+            {% if page_obj.object_list.count > 1 %}
+                <h4 class="title is-4">Alternatives: </h4>
+                <div class="section">
+                    {% for alternative in page_obj %}
+                        <div class="box">
+                            <small>by {{ alternative.created_by }}</small>
+                            <small class="has-text-grey-light">,{{ alternative.created_at }}</small>
+                            <div class="dropdown-divider"></div>
+                            <p> {{ alternative.content|truncatewords:50 }}</p>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-
+            {% else %}
+                <p class="has-text-grey is-italic has-background-light">There is no alternatives for this
+                    proposition.</p>
+            {% endif %}
+        </div>
+        {% include 'utils/pagination.html' %}
     </div>
 {% endblock %}

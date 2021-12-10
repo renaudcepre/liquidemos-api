@@ -27,6 +27,19 @@ def project_detail(request, slug):
 
 
 def proposition_detail(request, id):
+    """La vue d'une proposition et toutes ses alternatives liées, paginées."""
     proposition = get_object_or_404(Proposition, pk=id)
+
+    alernative_list = proposition.alternative_set.all().order_by('proposition__alternative')
+    paginator = Paginator(alernative_list, 3)
+
+    original_alt = proposition.alternative_set.order_by('created_by__alternative').first()
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(request, 'projects/proposition_detail.html',
-                  context={'proposition': proposition})
+                  context={'proposition': proposition,
+                           'original_alt': original_alt,
+                           'page_obj': page_obj,
+                           'paginator': paginator})
+
