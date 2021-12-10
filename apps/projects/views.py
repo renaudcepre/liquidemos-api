@@ -10,6 +10,20 @@ class ProjectListView(ListView):
     model = Project
     ordering = ['created_at']
 
+    def get_queryset(self):
+        filter_by_tags = self.request.GET.get('tags')
+        queryset = Project.objects.all()
+        if filter_by_tags:
+            queryset = queryset.filter(tags__name__in=filter_by_tags.split(','))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(ProjectListView, self).get_context_data(**kwargs)
+        filter_by_tags = self.request.GET.get('tags', '')
+        if filter_by_tags:
+            context['filter_tags'] = filter_by_tags.split(',')
+        return context
+
 
 def project_detail(request, slug):
     """La vue d'un projet et toutes ses propositions liées, paginées."""
@@ -42,4 +56,3 @@ def proposition_detail(request, id):
                            'original_alt': original_alt,
                            'page_obj': page_obj,
                            'paginator': paginator})
-
