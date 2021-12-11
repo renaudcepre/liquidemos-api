@@ -6,7 +6,14 @@
             <h1 class="title">{{ project.name }}</h1>
             <p class="subtitle">{{ project.description }}</p>
             {% if project.from_proposition %}
-                <p class="is-italic"> From proposition <a>{{ project.from_proposition.name }}</a></p>
+                <p class="is-italic"> From proposition
+                    <a href={% url 'proposition_detail' id=project.from_proposition.pk %}>
+                        {{ project.from_proposition.name }}</a>
+                    &nbsp;( on project
+                    <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
+                        {{ project.from_proposition.project.name }}</a>
+                    )
+                </p>
             {% endif %}
             <div class="dropdown-divider"></div>
             <h4 class="title is-4">Proposition{{ project.proposition_set.count|pluralize }}: </h4>

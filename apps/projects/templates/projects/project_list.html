@@ -29,8 +29,10 @@
                                                 Child of project
                                                 <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
                                                     {{ project.from_proposition.project.name }}
-                                                </a>
-                                                .
+                                                </a> via proposition
+                                                <a href={% url 'proposition_detail' id=project.from_proposition.pk %}>
+                                                    {{ project.from_proposition.name }}
+                                                </a>.
                                             </small>
                                         {% endif %}
                                         <br>
