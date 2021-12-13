@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -12,41 +13,53 @@ class Tag(models.Model):
         return f"{self.name}"
 
 
-class Alternative(DatedModelMixin, models.Model):
-    content = models.TextField()
-    proposition = models.ForeignKey('Proposition', on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Alternative {self.id} for  {self.proposition.name}"
-
-
-class Proposition(models.Model):
-    """A proposition is defined by these alternatives."""
-    name = models.CharField(max_length=64)
-    project = models.ForeignKey("Project", on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Proposition {self.name} ({self.alternative_set.count()} alternatives)"
-
-
 class Project(DatedModelMixin, models.Model):
-    """A project contains a number of propositions."""
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64,
+                            validators=[RegexValidator(r'^[a-zA-Z-1-9-_ ]*$')])
     description = models.TextField(blank=True)
 
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(editable=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    from_proposition = models.ForeignKey(Proposition, on_delete=models.PROTECT,
-                                         null=True, blank=True,
-                                         related_name='proposition')
     tags = models.ManyToManyField(Tag, blank=True)
+
+    # Un parent est considere comme dependance de son enfant par default
+    parent = models.ForeignKey("Project", on_delete=models.CASCADE,
+                               null=True, blank=True,
+                               related_name='childs')
+    # Ne doivent pas etre un parent
+    depends_on = models.ManyToManyField("Project",
+                                        related_name='dependencies',
+                                        blank=True)
+    # Les alternatives doivent avoir le meme parent, et ne pas etre dependants
+    # les unes des autres
+    alternatives = models.ManyToManyField("Project", blank=True)
+
+    @property
+    def parents_number(self):
+        """@return the number of projects that are parents of this one """
+        count = 0
+        project = self
+        while project.parent is not None:
+            count += 1
+            project = project.parent
+        return count
+
+    @property
+    def first_parent(self):
+        """@return the older parent of this project"""
+        project = self
+        while project.parent is not None:
+            project = project.parent
+        return project
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Project {self.name}"
+        if not self.parent:
+            return f"{self.name}"
+        parent_count = self.parents_number
+        if parent_count == 1:
+            return f"{self.parent.name}/{self.name}"
+        return f"{self.first_parent.name}/.../{self.name}"
