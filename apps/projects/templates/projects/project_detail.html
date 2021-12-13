@@ -5,38 +5,7 @@
         <div class="section">
             <h1 class="title">{{ project.name }}</h1>
             <p class="subtitle">{{ project.description }}</p>
-            {% if project.from_proposition %}
-                <p class="is-italic"> From proposition
-                    <a href={% url 'proposition_detail' id=project.from_proposition.pk %}>
-                        {{ project.from_proposition.name }}</a>
-                    &nbsp;( on project
-                    <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
-                        {{ project.from_proposition.project.name }}</a>
-                    )
-                </p>
-            {% endif %}
-            <div class="dropdown-divider"></div>
-            <h4 class="title is-4">Proposition{{ project.proposition_set.count|pluralize }}: </h4>
-            <div class="section">
-                {% for proposition in page_obj %}
-                    <a href={% url 'proposition_detail' id=proposition.pk %}>
-                        <div class="box">
-                            <h6 class="title is-6">{{ proposition.name }}</h6>
-                            <p> {{ proposition.alternative_set.first.content }}
-                                {% with others=proposition.alternative_set.count|add:"-1" %}
-                                    {% if others > 0 %}
-                                        <span style="white-space: nowrap"
-                                              class="has-text-grey-light">
-                                    {{ others }} other{{ others|pluralize }} alternative{{ others|pluralize }}.
-                                </span>
-                                    {% endif %}
-                                {% endwith %}
-                            </p>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
         </div>
-        {% include 'utils/pagination.html' %}
+    </div>
     </div>
 {% endblock %}
