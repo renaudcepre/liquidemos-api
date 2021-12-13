@@ -1,5 +1,10 @@
+from typing import List
+
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
@@ -26,7 +31,7 @@ class Project(DatedModelMixin, models.Model):
     parent = models.ForeignKey("Project", on_delete=models.CASCADE,
                                null=True, blank=True,
                                related_name='childs')
-    # Ne doivent pas etre un parent
+    # Ne doivent pas etre ni parents, ni alternatives
     depends_on = models.ManyToManyField("Project",
                                         related_name='dependencies',
                                         blank=True)
@@ -35,22 +40,14 @@ class Project(DatedModelMixin, models.Model):
     alternatives = models.ManyToManyField("Project", blank=True)
 
     @property
-    def parents_number(self):
-        """@return the number of projects that are parents of this one """
-        count = 0
+    def parents(self) -> List:
+        """@return the parents of the projects as list"""
+        parents = []
         project = self
         while project.parent is not None:
-            count += 1
+            parents.append(project.parent)
             project = project.parent
-        return count
-
-    @property
-    def first_parent(self):
-        """@return the older parent of this project"""
-        project = self
-        while project.parent is not None:
-            project = project.parent
-        return project
+        return parents
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -59,7 +56,35 @@ class Project(DatedModelMixin, models.Model):
     def __str__(self):
         if not self.parent:
             return f"{self.name}"
-        parent_count = self.parents_number
-        if parent_count == 1:
+        if len(self.parents) == 1:
             return f"{self.parent.name}/{self.name}"
-        return f"{self.first_parent.name}/.../{self.name}"
+        return f"{self.parents[-1].name}/.../{self.name}"
+
+
+@receiver(m2m_changed, sender=Project.depends_on.through)
+def validate_depends(sender, action, instance: Project, **kwargs):
+    """Chek that the projects added as dependencies are not parents or alternatives."""
+    if action == 'post_add':
+        parent_list = instance.parents
+        for rel in instance.depends_on.all():
+            if rel == instance:
+                raise ValidationError(f"Can depends on itself")
+            if rel in parent_list:
+                raise ValidationError(f'This project already depends on "{rel}" by inheritance.')
+            if rel in instance.alternatives.all():
+                raise ValidationError(
+                    f'{rel} cannot be added as dependencie, because its an alternative to that project')
+
+
+@receiver(m2m_changed, sender=Project.alternatives.through)
+def validate_alternatives(sender, action, instance: Project, **kwargs):
+    """"""
+    if action == 'post_add':
+        for alternative in instance.alternatives.all():
+            if alternative == instance:
+                raise ValidationError(f"Cannot be an alternative to itself")
+            if alternative.parent != instance.parent:
+                raise ValidationError(f'Alternatives have to share the same parent')
+            if alternative in instance.alternatives.all() or instance in alternative.alternatives.all():
+                raise ValidationError(
+                    f'{alternative} cannot be added as alternative, because its a dependencie to that project')
