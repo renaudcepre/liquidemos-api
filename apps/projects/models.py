@@ -55,10 +55,10 @@ class Project(DatedModelMixin, models.Model):
 
     def __str__(self):
         if not self.parent:
-            return f"{self.name}"
+            return f"{self.slug}"
         if len(self.parents) == 1:
-            return f"{self.parent.name}/{self.name}"
-        return f"{self.parents[-1].name}/.../{self.name}"
+            return f"{self.parent.slug}/{self.slug}"
+        return f"{self.parents[-1].slug}/.../{self.slug}"
 
 
 @receiver(m2m_changed, sender=Project.depends_on.through)
