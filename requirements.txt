@@ -1,3 +1,4 @@
 Django==4.0
 pylint-django
 pyyaml
+django-debug-toolbar==3.2.3
