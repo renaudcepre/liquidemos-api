@@ -34,14 +34,11 @@ class Command(BaseCommand):
             for index, parent in enumerate(line):
                 parent.save()
                 for i in range(width):
-                    path = parent.path + '/' + hex(i)[2:]
                     new_node = Project(
                         parent=parent,
-                        path=path, depth=d + 1,
-                        created_by=user, name=path)
+                        created_by=user, name=f'd{d}i{i}')
 
                     new_line.append(new_node)
             print(f"{len(new_line)} nodes.")
-            # Project.objects.bulk_create(new_line)
             line = new_line
         print(f"Created {Project.objects.count()} nodes [{(datetime.now() - t1).microseconds / 1000} ms]")
