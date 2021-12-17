@@ -74,11 +74,8 @@ class Project(DatedModelMixin, models.Model):
                 row = Project.objects.filter(depth=self.depth)
                 free = next_id(row)
                 self.path = self.parent.path + '/' + Project.encoder.encode(free)
-        try:
-            super().save(*args, **kwargs)
-        except django.db.utils.IntegrityError as e:
-            print(self.path)
-            raise e
+        super().save(*args, **kwargs)
+
 
     @property
     def node_id(self) -> int:
