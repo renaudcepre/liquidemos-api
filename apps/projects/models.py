@@ -7,6 +7,7 @@ from django.db.models import QuerySet
 from django.db.models.functions import Length
 from django.utils.text import slugify
 
+from apps.commons.utils.Encoder import Encoder
 from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.users.models import User
 
@@ -16,8 +17,7 @@ models.CharField.register_lookup(Length, 'length')
 
 
 def next_id(row: QuerySet):
-    node_ids: List[int] = [n.node_id for n in row]
-    assert node_ids == sorted(node_ids)
+    node_ids: List[int] = sorted([n.node_id for n in row])
 
     if len(node_ids) == 0 or node_ids[0] != 0:
         return 0
@@ -36,6 +36,8 @@ class Tag(models.Model):
 
 
 class Project(DatedModelMixin, models.Model):
+    encoder = Encoder(charset=Encoder.CHARSET_44)
+    assert not encoder.charset.find('/') != -1
     # MATERIALIZED PATH TREE
     path = models.CharField(max_length=1024, db_index=True, unique=True, editable=False)
     depth = models.IntegerField(editable=False, null=False)
@@ -63,22 +65,25 @@ class Project(DatedModelMixin, models.Model):
 
         if not self.pk:
             if self.parent is None:
-                tops = Project.objects.filter(path__length=1)
+                tops = Project.objects.filter(parent__isnull=True)
                 free = next_id(tops)
-                self.path = hex(free)[2:]
+                self.path = Project.encoder.encode(free)
                 self.depth = 0
             else:
                 self.depth = self.parent.depth + 1
                 row = Project.objects.filter(depth=self.depth)
                 free = next_id(row)
-                self.path = self.parent.path + '/' + hex(free)[2:]
-
-        super().save(*args, **kwargs)
+                self.path = self.parent.path + '/' + Project.encoder.encode(free)
+        try:
+            super().save(*args, **kwargs)
+        except django.db.utils.IntegrityError as e:
+            print(self.path)
+            raise e
 
     @property
     def node_id(self) -> int:
         """Parse and retrun the name of the node in the path """
-        return int(self.path.rpartition('/')[2], 16)
+        return Project.encoder.decode(self.path.rpartition('/')[2])
 
     def parents(self, depth: int = 0) -> QuerySet:
         """Query all childs of the node in the given depth, and return them as a queryset"""
