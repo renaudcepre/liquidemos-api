@@ -11,7 +11,9 @@ class MaterializedPathNodeModel(models.Model):
     assert encoder.charset.find('/') == -1
     path = models.CharField(max_length=1024, db_index=True, unique=True, editable=False)
     depth = models.IntegerField(editable=False, null=False)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='fk_childs')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE,
+                               null=True, blank=True,
+                               related_name='fk_childs')
 
     def save(self, *args, **kwargs):
         if not self.pk:

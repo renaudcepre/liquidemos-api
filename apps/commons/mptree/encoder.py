@@ -37,7 +37,8 @@ class Encoder:
         if not self.case:
             encoded = encoded.lower()
         assert len(set(self.charset + encoded)) == len(self.charset), \
-            f"These characters are unknow in the instance charset: `{','.join(sorted(set(encoded) - set(self.charset)))}`"
+            f"These characters are unknow in the instance charset: " \
+            f"`{','.join(sorted(set(encoded) - set(self.charset)))}`"
 
         return reduce(lambda count, c: count * self.base + self.charset.index(c), encoded, 0)
 
@@ -73,7 +74,9 @@ def test_encode():
     encode_decode(encoder, 4096, '100')
     encode_decode(encoder, 35, 'Z')
 
-    encoder = Encoder(charset='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~`!@#$%^&*()_-+={[]}:;<,>.?/', case=False)
+    encoder = Encoder(
+        charset='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~`!@#$%^&*()_-+={[]}:;<,>.?/',
+        case=False)
     encode_decode(encoder, 35, 'z')
 
     encoder = Encoder(charset='XY')
