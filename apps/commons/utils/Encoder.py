@@ -1,16 +1,22 @@
 from datetime import datetime
 from functools import reduce
 
+import pytest
+
 
 class Encoder:
-    DEFAULT_CHARSET = '0123456789ABCDEF'
+    CHARSET_16 = '0123456789ABCDEF'
+    CHARSET_32 = '0123456789ABCDEFGHIJKLMNOPQRSTUV'
+    CHARSET_44 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`{}~'
+    CHARSET_64 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~`!@#$%^&*()_-+={[]}:;<,>.?|'
+    DEFAULT_CHARSET = CHARSET_16
 
     def __init__(self, charset: str = DEFAULT_CHARSET, case=True):
-        if len(set(charset)) != len(charset):
-            raise ValueError('Charset must contains only uniques characters')
         self.case = case
         if not self.case:
             charset = charset.lower()
+        assert len(set(charset)) == len(charset), 'Charset must contains only unique characters'
+
         self.charset = charset
         self.base = len(charset)
 
@@ -77,6 +83,8 @@ def test_encode():
 
     e = Encoder(charset='XY', case=False)
     encode_decode(e, 0, 'x')
+    with pytest.raises(AssertionError):
+        Encoder(charset='aA', case=False) # Two times the same char
 
 
 if __name__ == '__main__':
