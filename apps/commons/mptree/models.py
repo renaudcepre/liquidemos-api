@@ -20,13 +20,13 @@ class MaterializedPathNodeModel(models.Model):
             # Create path
             if self.parent is None:
                 tops = self.__class__.objects.filter(parent__isnull=True)
-                free = self.next_id(tops)
+                free = self.next_id(list(tops))
                 self.path = MaterializedPathNodeModel.encoder.encode(free)
                 self.depth = 0
             else:
                 self.depth = self.parent.depth + 1
                 row = self.__class__.objects.filter(depth=self.depth)
-                free = self.next_id(row)
+                free = self.next_id(list(row))
                 self.path = self.parent.path + '/' + MaterializedPathNodeModel.encoder.encode(free)
         super().save(*args, **kwargs)
 
@@ -52,7 +52,7 @@ class MaterializedPathNodeModel(models.Model):
         return qs.exclude(pk=self.pk)
 
     @staticmethod
-    def next_id(row: QuerySet):
+    def next_id(row: List):
         """Looks for the first free identifier in the list"""
 
         node_ids: List[int] = sorted([n.node_id for n in row])
@@ -63,7 +63,7 @@ class MaterializedPathNodeModel(models.Model):
         for i, node_id in enumerate(node_ids):
             if i > 0 and node_ids[i - 1] != node_ids[i] - 1:
                 return node_id - 1
-        return row.count()
+        return len(row)
 
     class Meta:
         abstract = True
