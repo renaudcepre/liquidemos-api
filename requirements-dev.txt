@@ -1,0 +1,7 @@
+pylint-django
+pyyaml
+django-debug-toolbar==3.2.3
+pytest~=6.2.5
+pytest-cov
+pytest-django
+
