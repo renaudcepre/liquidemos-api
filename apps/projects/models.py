@@ -6,8 +6,8 @@ from django.db.models.functions import Length
 from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
-from apps.users.models import User
 from apps.commons.utils.mptree.models import MaterializedPathNodeModel
+from apps.users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
     depends_on = models.ManyToManyField("Project",
                                         related_name='dependencies',
                                         blank=True)
+
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)

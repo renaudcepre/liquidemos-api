@@ -31,6 +31,7 @@ class Encoder:
         return result[::-1]
 
     def decode(self, encoded: str) -> int:
+
         if not self.case:
             encoded = encoded.lower()
         assert len(set(self.charset + encoded)) == len(self.charset), \

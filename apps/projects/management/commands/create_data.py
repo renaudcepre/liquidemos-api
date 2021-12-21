@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
@@ -25,22 +24,24 @@ class Command(BaseCommand):
 
         user = User.objects.get_or_create(username='rcepre', is_superuser=True)[0]
 
-        t1 = datetime.now()
+        time = datetime.now()
         # Create the top node.
-        first_node = Project.objects.create(parent=None, path='0', depth=0, created_by=user, name='0')
+        first_node = Project.objects.create(parent=None, path='0', depth=0,
+                                            created_by=user, name='0')
         line = [first_node]
         with transaction.atomic():
-            for d in range(depth):
-                print(f'depth: {d} .... ', end='')
+            for row in range(depth):
+                print(f'depth: {row} .... ', end='')
                 new_line = []
-                for index, parent in enumerate(line):
+                for parent in line:
                     for i in range(width):
                         new_node = Project(
                             parent=parent,
-                            created_by=user, name=f'd{d}i{i}')
+                            created_by=user, name=f'd{row}i{i}')
                         new_node.save()
 
                         new_line.append(new_node)
                 print(f"{len(new_line)} nodes.")
                 line = new_line
-        print(f"Created {Project.objects.count()} nodes [{(datetime.now() - t1).microseconds / 1000} ms]")
+        print(f"Created {Project.objects.count()} nodes "
+              f"[{(datetime.now() - time).microseconds / 1000} ms]")

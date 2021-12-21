@@ -11,8 +11,8 @@
     is_staff: true
     is_active: true
     date_joined: 2021-11-30 12:36:18.523725+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]
 - model: users.user
   pk: 32
   fields:
@@ -26,8 +26,8 @@
     is_staff: false
     is_active: true
     date_joined: 2021-12-10 12:22:47.015983+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]
 - model: users.user
   pk: 33
   fields:
@@ -41,8 +41,8 @@
     is_staff: false
     is_active: true
     date_joined: 2021-12-10 12:22:47.024398+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]
 - model: users.user
   pk: 34
   fields:
@@ -56,8 +56,8 @@
     is_staff: false
     is_active: true
     date_joined: 2021-12-10 12:22:47.027823+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]
 - model: users.user
   pk: 35
   fields:
@@ -71,8 +71,8 @@
     is_staff: false
     is_active: true
     date_joined: 2021-12-10 12:22:47.031431+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]
 - model: users.user
   pk: 36
   fields:
@@ -86,5 +86,5 @@
     is_staff: false
     is_active: true
     date_joined: 2021-12-10 12:22:47.039813+00:00
-    groups: []
-    user_permissions: []
+    groups: [ ]
+    user_permissions: [ ]

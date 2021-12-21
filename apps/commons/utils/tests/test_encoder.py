@@ -26,12 +26,13 @@ def test_encoding(encoder: Encoder, number: int, expected: str):
 @pytest.mark.parametrize('charset, case', [
     ('aA', False),
     ('AA', True),
+    ('AA', False),
 ])
 def test_failures(charset: str, case: bool):
     with pytest.raises(AssertionError):
-        Encoder(charset='aA', case=False)  # Two times the same char
+        Encoder(charset=charset, case=case)  # Two times the same char
     with pytest.raises(AssertionError):
-        Encoder(charset='aa', case=False)  # Two times the same char
+        Encoder(charset=charset, case=case)  # Two times the same char
 
 
 def test_negative():
