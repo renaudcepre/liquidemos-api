@@ -21,6 +21,13 @@ class Tag(models.Model):
         return f"{self.name}"
 
 
+class ConcurrencyGroup(models.Model):
+    """Represents a set of projects that are alternatives to each other."""
+
+    def __str__(self):
+        return f"Group projects {', '.join([str(p.pk) for p in self.project_set.all()])}"
+
+
 class Project(DatedModelMixin, MaterializedPathNodeModel):
     name = models.CharField(max_length=64,
                             validators=[RegexValidator(r'^[a-zA-Z-1-9-_ ]*$')])
@@ -33,6 +40,9 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
     depends_on = models.ManyToManyField("Project",
                                         related_name='dependencies',
                                         blank=True)
+    concurrency_group = models.ForeignKey(ConcurrencyGroup,
+                                          on_delete=models.SET_NULL,
+                                          null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
