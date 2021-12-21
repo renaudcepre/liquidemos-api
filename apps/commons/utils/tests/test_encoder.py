@@ -1,6 +1,6 @@
 import pytest
 
-from apps.commons.mptree.encoder import Encoder
+from apps.commons.utils.mptree.encoder import Encoder
 
 
 @pytest.mark.parametrize('encoder, number, expected', [

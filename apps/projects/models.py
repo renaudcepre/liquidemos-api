@@ -5,9 +5,9 @@ from django.db import models
 from django.db.models.functions import Length
 from django.utils.text import slugify
 
-from apps.commons.utilty.model_mixins import DatedModelMixin
+from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.users.models import User
-from apps.commons.mptree.models import MaterializedPathNodeModel
+from apps.commons.utils.mptree.models import MaterializedPathNodeModel
 
 logger = logging.getLogger(__name__)
 

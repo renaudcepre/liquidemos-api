@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 
-from apps.commons.mptree.models import MaterializedPathNodeModel
+from apps.commons.utils.mptree.models import MaterializedPathNodeModel
 
 
 class NodeModel(MaterializedPathNodeModel):

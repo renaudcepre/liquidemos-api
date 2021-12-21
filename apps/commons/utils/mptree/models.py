@@ -3,7 +3,7 @@ from typing import List
 from django.db import models
 from django.db.models import QuerySet
 
-from apps.commons.mptree.encoder import Encoder
+from apps.commons.utils.mptree.encoder import Encoder
 
 
 class MaterializedPathNodeModel(models.Model):
