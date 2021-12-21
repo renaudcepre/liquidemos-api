@@ -7,6 +7,9 @@ from apps.commons.utils.mptree.encoder import Encoder
 
 
 class MaterializedPathNodeModel(models.Model):
+    """Modelize a tree where paths are stored in database for speed up access
+     to childs without recursive traversals"""
+
     encoder = Encoder(charset=Encoder.CHARSET_44)
     assert encoder.charset.find('/') == -1
     path = models.CharField(max_length=1024, db_index=True, unique=True, editable=False)

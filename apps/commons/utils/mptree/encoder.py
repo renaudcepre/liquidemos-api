@@ -1,7 +1,11 @@
+"""Encode and decode values for a given charset"""
+
 from functools import reduce
 
 
 class Encoder:
+    """Encode and decode values for a given charset"""
+
     CHARSET_16 = '0123456789ABCDEF'
     CHARSET_32 = '0123456789ABCDEFGHIJKLMNOPQRSTUV'
     CHARSET_44 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`{}~'
@@ -18,6 +22,9 @@ class Encoder:
         self.base = len(charset)
 
     def encode(self, number: int) -> str:
+        """Encodes the number into a value that takes the charset size as a
+        base, using the charset values"""
+
         assert number >= 0, 'Number must be a positive value'
         result = ''
 
@@ -31,7 +38,7 @@ class Encoder:
         return result[::-1]
 
     def decode(self, encoded: str) -> int:
-
+        """Decode the string value to an integer, according to the charset and the base"""
         if not self.case:
             encoded = encoded.lower()
         assert len(set(self.charset + encoded)) == len(self.charset), \
