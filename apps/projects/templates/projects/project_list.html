@@ -13,6 +13,9 @@
                     <a class="is-link is-size-7" href={% url 'project_list' %}>remove filtering</a>
                 </div>
             {% endif %}
+            {% if childs_of %}
+                <h4 class="title is-4">Propositions for project <a href={%  url 'project_detail' slug=childs_of.slug %}>{{ childs_of.name }}</a></h4>
+            {% endif %}
             {% for project in page_obj %}
                 <a class="has-text-grey-dark" href={% url "project_detail" slug=project.slug %}>
                     <div class="box">

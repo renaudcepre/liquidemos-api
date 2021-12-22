@@ -2,6 +2,19 @@
 
 {% block content %}
     <div class="lq-content">
+        <nav class="breadcrumb" aria-label="breadcrumbs">
+            <ul>
+                {% for parent in project.parents %}
+                    <li><a href={% url 'project_detail' slug=parent.slug %}>{{ parent.name }}</a></li>
+                {% endfor %}
+                <li class="is-active"><a href="#">{{ project.name }}</a></li>
+                {% if project.childs.count > 0 %}
+                    <li><a href={% url 'project_list'  %}?childs_of={{ project.slug }}>...</a></li>
+
+                {% endif %}
+            </ul>
+        </nav>
+        {{ project.breadcrumb }}
         <div class="section">
             <h1 class="title">{{ project.name }}</h1>
             <p class="subtitle">{{ project.description }}</p>
