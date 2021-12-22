@@ -38,21 +38,26 @@ class MaterializedPathNodeModel(models.Model):
         """Parse and retrun the name of the node in the path """
         return MaterializedPathNodeModel.encoder.decode(self.path.rpartition('/')[2])
 
-    def parents(self, depth: int = 0) -> QuerySet:
+    def parents(self, depth: int = 0, include_self: bool = False) -> QuerySet:
         """Query all childs of the node in the given depth, and return them as a queryset"""
         path = self.path
         # Create a list of all the parents paths
         paths = [path[0:x] for x in [i for i, c in enumerate(path) if c == '/']][-depth:]
+        if include_self:
+            paths.append(self.path)
 
         qs = self.__class__.objects.filter(path__in=paths)
+
         return qs
 
-    def childs(self, depth: int = 0) -> QuerySet:
+    def childs(self, depth: int = 0, include_self: bool = False) -> QuerySet:
         """Query all parents of the node in the given depth, and return them as a queryset"""
         qs = self.__class__.objects.filter(path__startswith=self.path)
         if depth > 0:
             qs = qs.filter(depth__lt=self.depth + depth + 1)
-        return qs.exclude(pk=self.pk)
+        if include_self is False:
+            qs = qs.exclude(pk=self.pk)
+        return qs
 
     @staticmethod
     def next_id(row: List):
