@@ -1,17 +1,10 @@
-import logging
-
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.functions import Length
 from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.commons.utils.mptree.models import MaterializedPathNodeModel
 from apps.users.models import User
-
-logger = logging.getLogger(__name__)
-
-models.CharField.register_lookup(Length, 'length')
 
 
 class Tag(models.Model):
