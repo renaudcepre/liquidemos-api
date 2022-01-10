@@ -1,0 +1,35 @@
+<div class="box">
+    <article class="media">
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>{{ project.name }}</strong>
+                    <small>by {{ project.created_by }}</small>
+                    <small class="has-text-grey-light">,{{ project.created_at }}</small>
+                    {% if project.from_proposition %}
+                        <small class="is-italic">
+                            <br>
+                            Child of project
+                            <a href={% url 'project_detail' slug=project.from_proposition.project.slug %}>
+                                {{ project.from_proposition.project.name }}
+                            </a> via proposition
+                            <a href={% url 'proposition_detail' id=project.from_proposition.pk %}>
+                                {{ project.from_proposition.name }}
+                            </a>.
+                        </small>
+                    {% endif %}
+                    <br>
+                <div>
+                    {% for tag in project.tags.all %}
+                        <a href="?tags={{ tag }}" class="tag is-info is-light">
+                            {{ tag }}
+                        </a>
+                    {% endfor %}
+                </div>
+                <br>
+                {{ project.description }}
+                </p>
+            </div>
+        </div>
+    </article>
+</div>
