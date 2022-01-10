@@ -1,5 +1,7 @@
-from django.core.validators import RegexValidator
+from typing import Optional
+
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
@@ -14,7 +16,7 @@ class Tag(models.Model):
         return f"{self.name}"
 
 
-class ConcurrencyGroup(models.Model):
+class AlternativeGroup(models.Model):
     """Represents a set of projects that are alternatives to each other."""
 
     def __str__(self):
@@ -22,8 +24,7 @@ class ConcurrencyGroup(models.Model):
 
 
 class Project(DatedModelMixin, MaterializedPathNodeModel):
-    name = models.CharField(max_length=64,
-                            validators=[RegexValidator(r'^[a-zA-Z-1-9-_ ]*$')])
+    name = models.CharField(max_length=64)
     description = models.TextField(blank=True)
     slug = models.SlugField(editable=False)
     tags = models.ManyToManyField(Tag, blank=True)
@@ -33,9 +34,15 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
     depends_on = models.ManyToManyField("Project",
                                         related_name='dependencies',
                                         blank=True)
-    concurrency_group = models.ForeignKey(ConcurrencyGroup,
+    alternative_group = models.ForeignKey(AlternativeGroup,
                                           on_delete=models.SET_NULL,
                                           null=True, blank=True)
+
+    @property
+    def alternatives(self) -> Optional[QuerySet]:
+        if self.alternative_group is not None:
+            return self.alternative_group.project_set.exclude(pk=self.pk)
+        return None
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
