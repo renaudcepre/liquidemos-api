@@ -1,7 +1,7 @@
 import pytest
 from django.db.models import QuerySet
 
-from apps.projects.models import Project, ConcurrencyGroup
+from apps.projects.models import Project, AlternativeGroup
 from apps.users.models import User
 
 
@@ -74,9 +74,9 @@ def test_tree_childs_depth(project_tree):
 @pytest.mark.django_db
 def test_concurency_group(project_tree):
     childs = project_tree.filter(depth=1)
-    concurency_group = ConcurrencyGroup.objects.create()
+    concurency_group = AlternativeGroup.objects.create()
     for child in childs:
-        child.concurrency_group = concurency_group
+        child.alternative_group = concurency_group
         child.save()
 
     assert concurency_group.project_set.count() == 3
