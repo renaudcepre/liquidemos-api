@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.db import models
 from django.db.models import QuerySet
+from django.urls import reverse
 from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
@@ -50,3 +51,6 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
 
     def __str__(self):
         return self.slug
+
+    def get_absolute_url(self):
+        return reverse('project_detail', kwargs={'slug': self.slug})
