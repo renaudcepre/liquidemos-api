@@ -91,8 +91,11 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
 
     @property
     def upvotes(self):
-        """Used for list_display in admin panel"""
         return self.vote_set.filter(upvote=True).count()
+
+    @property
+    def downvotes(self):
+        return self.vote_set.filter(upvote=False).count()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

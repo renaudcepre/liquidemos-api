@@ -7,3 +7,13 @@
 .box {
     margin-bottom: 5px;
 }
+
+.vote-box {
+    display: flex;
+    flex-direction: column;
+    min-width: 25px;
+}
+
+.vote-divider {
+    height: 10px;
+}
