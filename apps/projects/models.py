@@ -17,17 +17,55 @@ class Tag(models.Model):
         return f"{self.name}"
 
 
+class Delegation(DatedModelMixin, models.Model):
+    tags = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    delegate = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 related_name='incoming_delegations')
+    delegator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                  related_name='outgoing_delegations')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['delegate', 'delegator'],
+                                    name='unique delegation')]
+
+    @staticmethod
+    def get_delegations(user: User, tag: Tag):
+        """Return the list of all the delegation for the user for the specified
+        tag recursively."""
+        dels = []
+        for delegation in user.incoming_delegations.filter(tags=tag):
+            dels += Delegation.get_delegations(delegation.delegator, tag)
+            dels.append(delegation)
+        return dels
+
+    @staticmethod
+    def get_vote_weight(user: User, tag: Tag):
+        # OPTPOS
+        return len(Delegation.get_delegations(user, tag)) + 1
+
+    def __str__(self):
+        return f"{self.delegator} -> {self.delegate} " \
+               f"for {self.tags.name}"
+
+
 class Vote(DatedModelMixin, models.Model):
     upvote = models.BooleanField(null=False, blank=False, default=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user} " \
+               f"{'up' if self.upvote else ''}vote" \
+               f" for {self.project}"
 
 
 class AlternativeGroup(models.Model):
     """Represents a set of projects that are alternatives to each other."""
 
     def __str__(self):
-        return f"Group projects {', '.join([str(p.pk) for p in self.project_set.all()])}"
+        return f"Group projects " \
+               f"{', '.join([str(p.pk) for p in self.project_set.all()])}"
 
 
 class Project(DatedModelMixin, MaterializedPathNodeModel):
