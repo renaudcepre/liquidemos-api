@@ -17,6 +17,12 @@ class Tag(models.Model):
         return f"{self.name}"
 
 
+class Vote(DatedModelMixin, models.Model):
+    upvote = models.BooleanField(null=False, blank=False, default=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey("Project", on_delete=models.CASCADE)
+
+
 class AlternativeGroup(models.Model):
     """Represents a set of projects that are alternatives to each other."""
 
@@ -44,6 +50,11 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
         if self.alternative_group is not None:
             return self.alternative_group.project_set.exclude(pk=self.pk)
         return None
+
+    @property
+    def upvotes(self):
+        """Used for list_display in admin panel"""
+        return self.vote_set.filter(upvote=True).count()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
