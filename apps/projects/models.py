@@ -39,11 +39,6 @@ class Delegation(DatedModelMixin, models.Model):
             dels.append(delegation)
         return dels
 
-    @staticmethod
-    def get_vote_weight(user: User, tag: Tag):
-        # OPTPOS
-        return len(Delegation.get_delegations(user, tag)) + 1
-
     def __str__(self):
         return f"{self.delegator} -> {self.delegate} " \
                f"for {self.tags.name}"
@@ -69,6 +64,11 @@ class AlternativeGroup(models.Model):
 
 
 class Project(DatedModelMixin, MaterializedPathNodeModel):
+    """
+    Represents a project, which can be voted and validated by the users.
+    Each project can have child projects.
+    The validation of a project depends on the validation of its children.
+    """
     name = models.CharField(max_length=64)
     description = models.TextField(blank=True)
     slug = models.SlugField(editable=False)
