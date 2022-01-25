@@ -1,7 +1,7 @@
 import pytest
 from django.db.models import QuerySet
 
-from apps.projects.models import Project, AlternativeGroup
+from apps.projects.models import Project, AlternativeGroup, Vote
 from apps.users.models import User
 
 
@@ -83,7 +83,7 @@ def test_concurency_group(project_tree):
 
 
 @pytest.mark.django_db
-def test_indlude_self(project_tree):
+def test_include_self(project_tree):
     root: Project = project_tree.get(depth=0)
 
     assert not root.childs().contains(root)
@@ -92,3 +92,20 @@ def test_indlude_self(project_tree):
     child: Project = root.childs().last()
     assert not child.parents().contains(child)
     assert child.parents(include_self=True).contains(child)
+
+
+@pytest.mark.django_db
+def test_vote(superuser):
+    project = Project.objects.create(created_by=superuser, parent=None, name="test")
+    vote = Vote.objects.create(project=project, user=superuser)
+
+    assert project.upvotes == 1
+    assert project.downvotes == 0
+
+    vote.upvote = False
+    vote.save()
+
+    assert project.upvotes == 0
+    assert project.downvotes == 1
+
+    assert vote.user == superuser
