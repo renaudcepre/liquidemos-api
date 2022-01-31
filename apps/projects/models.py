@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from django.db import models
 from django.db.models import QuerySet
@@ -18,7 +18,7 @@ class Tag(models.Model):
 
 
 class Delegation(DatedModelMixin, models.Model):
-    tags = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     delegate = models.ForeignKey(User, on_delete=models.CASCADE,
                                  related_name='incoming_delegations')
     delegator = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -30,18 +30,26 @@ class Delegation(DatedModelMixin, models.Model):
                                     name='unique delegation')]
 
     @staticmethod
-    def get_delegations(user: User, tag: Tag):
+    def _get_delegations(user: User, tag: Tag) -> List:
+        """Return the list of all the delegations pk for the user for the specified
+        tag recursively."""
+        pk_list = []
+        for delegation in user.incoming_delegations.filter(tag=tag):
+            pk_list += Delegation.get_delegations(delegation.delegator, tag)
+            pk_list.append(delegation.pk)
+
+        return pk_list
+
+    @staticmethod
+    def get_delegations(user: User, tag: Tag) -> QuerySet:
         """Return the list of all the delegation for the user for the specified
         tag recursively."""
-        dels = []
-        for delegation in user.incoming_delegations.filter(tags=tag):
-            dels += Delegation.get_delegations(delegation.delegator, tag)
-            dels.append(delegation)
-        return dels
+        return Delegation.objects.filter(
+            pk__in=Delegation._get_delegations(user, tag))
 
     def __str__(self):
         return f"{self.delegator} -> {self.delegate} " \
-               f"for {self.tags.name}"
+               f"for {self.tag.name}"
 
 
 class Vote(DatedModelMixin, models.Model):
