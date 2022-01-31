@@ -26,26 +26,25 @@ class Delegation(DatedModelMixin, models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['delegate', 'delegator'],
+            models.UniqueConstraint(fields=['delegate', 'delegator', 'tag'],
                                     name='unique delegation')]
 
     @staticmethod
-    def _get_delegations(user: User, tag: Tag) -> List:
-        """Return the list of all the delegations pk for the user for the specified
-        tag recursively."""
-        pk_list = []
-        for delegation in user.incoming_delegations.filter(tag=tag):
-            pk_list += Delegation.get_delegations(delegation.delegator, tag)
-            pk_list.append(delegation.pk)
+    def _recurse(user, tag, outgoing):
+        del_list = []
+        qs = user.incoming_delegations if outgoing else user.outgoing_delegations
 
-        return pk_list
+        for delegation in qs.filter(tag=tag):
+            del_list += Delegation.get_incomings(delegation.delegator, tag)
+            del_list.append(delegation)
+        return del_list
 
     @staticmethod
-    def get_delegations(user: User, tag: Tag) -> QuerySet:
+    def get_incomings(user: User, tag: Tag) -> QuerySet:
         """Return the list of all the delegation for the user for the specified
         tag recursively."""
-        return Delegation.objects.filter(
-            pk__in=Delegation._get_delegations(user, tag))
+        pk_list = [d.pk for d in Delegation._recurse(user, tag)]
+        return Delegation.objects.filter(pk__in=pk_list)
 
     def __str__(self):
         return f"{self.delegator} -> {self.delegate} " \
