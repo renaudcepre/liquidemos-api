@@ -1,8 +1,12 @@
 <div class="box">
     <article class="media">
         <div class="media-content">
-            <div class="content">
-
+            <div class="content" style="display: flex; flex-direction: row">
+                <div class="vote-box">
+                    <div class="upvotes">{{ project.upvotes }}</div>
+                    <div class="vote-divider"></div>
+                    <div class="downvotes">{{ project.downvotes }}</div>
+                </div>
                 <div>
                     <strong>{{ project.name }}</strong>
                     <small>by {{ project.created_by }}</small>

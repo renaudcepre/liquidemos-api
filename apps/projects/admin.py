@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.projects.models import Project, Tag, AlternativeGroup
+from apps.projects.models import Project, Tag, AlternativeGroup, Vote, Delegation
 
 
 class TagListFilter(admin.SimpleListFilter):
@@ -38,6 +38,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "parent",
         "created_by",
         "depth",
+        "upvotes",
     )
     ordering = ("depth", "parent",)
     search_fields = ("name",)
@@ -48,3 +49,5 @@ class ProjectAdmin(admin.ModelAdmin):
 
 admin.site.register(Tag)
 admin.site.register(AlternativeGroup)
+admin.site.register(Vote)
+admin.site.register(Delegation)
