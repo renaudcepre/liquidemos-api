@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 
 from django.db import models
 from django.db.models import QuerySet
@@ -30,7 +30,7 @@ class Delegation(DatedModelMixin, models.Model):
                                     name='unique delegation')]
 
     @staticmethod
-    def _recurse(user, tag, outgoing):
+    def _recurse(user, tag, outgoing=True):
         del_list = []
         qs = user.incoming_delegations if outgoing else user.outgoing_delegations
 
