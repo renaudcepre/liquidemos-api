@@ -1,3 +1,7 @@
 [MASTER]
 django-settings-module=liquidemos.settings
 load-plugins=pylint_django
+disable=
+    C0114, # Missing-module-docstring
+    C0115, # Missing class docstring
+    C0116, # Missing function or method docstring

@@ -135,9 +135,8 @@ class TestDelegation:
         tag = Tag.objects.create(name='TAG')
         delegate = create_user()
         delegator = create_user()
-        deleg = Delegation.objects.create(tag=tag,
-                                          delegate=delegate,
-                                          delegator=delegator)
+        Delegation.objects.create(tag=tag, delegate=delegate,
+                                  delegator=delegator)
 
         assert Delegation.objects.count() == 1
         assert Delegation.get_incomings(delegate, tag).count() == 1
