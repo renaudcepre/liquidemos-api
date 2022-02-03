@@ -133,10 +133,22 @@ class TestVote:
 class TestDelegation:
     def test_delegation(self, create_user):
         tag = Tag.objects.create(name='TAG')
-        delegate = create_user()
-        delegator = create_user()
-        Delegation.objects.create(tag=tag, delegate=delegate,
+        delegate = create_user(username="delegate")
+        delegator = create_user(username="delegator")
+
+        Delegation.objects.create(tag=tag,
+                                  delegate=delegate,
                                   delegator=delegator)
+
+        with pytest.raises(IntegrityError):
+            # Check UniqueConstraints
+            with transaction.atomic():
+                Delegation.objects.create(tag=tag,
+                                          delegate=delegate,
+                                          delegator=delegator)
+                Delegation.objects.create(tag=tag,
+                                          delegate=create_user(),
+                                          delegator=delegator)
 
         assert Delegation.objects.count() == 1
         assert Delegation.get_incomings(delegate, tag).count() == 1
