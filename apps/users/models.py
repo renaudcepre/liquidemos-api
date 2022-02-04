@@ -1,22 +1,36 @@
-from django.apps import apps
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.db.models import QuerySet
+
+from apps.projects.models import Delegation, Tag
 
 
 class User(AbstractUser):
-    def vote_weight(self, tag):
-        pass
 
-    def delegation_chain(self, tag) -> QuerySet:
-        the_list = list(Delegation.objects.select_related('delegator', 'delegate').filter(tag=tag))
+    def delegation_chain(self, tag, direction='in') -> QuerySet:
+        assert direction in ('in', 'out')
 
-        def _recurse(user) -> list:
-            delegation_list = []
-            delegations = [a for a in the_list if a.delegate == user]
+        visited = []
+        if direction == 'in':
+            stack = list(self.incoming_delegations.filter(tag=tag))
+        else:
+            stack = list(self.outgoing_delegations.filter(tag=tag))
 
-            for d in delegations:
-                delegation_list += _recurse(d.delegator)
-                delegation_list.append(d)
-            return delegation_list
+        while stack:
+            node = stack.pop()
+            if node not in visited:
+                visited.append(node)
+                if direction == 'in':
+                    qs = node.delegator.incoming_delegations.filter(tag=tag)
+                else:
+                    qs = node.delegate.outgoing_delegations.filter(tag=tag)
+                stack.extend(list(qs))
 
-        pk_list = [d.pk for d in _recurse(self)]
-        return Delegation.objects.filter(pk__in=pk_list)
+        return Delegation.objects.filter(pk__in=[d.pk for d in visited])
+
+
+class VoteWeight(models.Model):
+    tag = models.ForeignKey(Tag,
+                            on_delete=models.CASCADE)
+    value = models.IntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
