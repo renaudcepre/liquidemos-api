@@ -1,16 +1,18 @@
 def init():
     os = __import__('os')
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "liquidemos.settings")
     sys = __import__('sys')
-
-    print('Python %s on %s' % (sys.version, sys.platform))
     django = __import__('django')
 
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "liquidemos.settings")
+
+    print('Python %s on %s' % (sys.version, sys.platform))
     print('Django %s' % django.get_version())
-    sys.path.extend(['/home/rcepre/dev/liquidemos', '/home/rcepre/dev/liquidemos/apps/projects/tests',
-                     '/snap/pycharm-professional/271/plugins/python/helpers/pycharm',
-                     '/snap/pycharm-professional/271/plugins/python/helpers/pydev'])
+    from django.db import connection
+    db_name = connection.settings_dict['NAME']
+    db_host = connection.settings_dict['HOST']
+    print(f'on database "{db_name}" {":" if db_host else ""} {db_host}')
+
     if 'setup' in dir(django):
         django.setup()
+
     print("-" * 80)
