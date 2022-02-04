@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 import uuid
 
 import pytest
 from django.core.management import call_command
+from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 
 from apps.projects.models import Project, AlternativeGroup, Vote, Tag, Delegation
@@ -150,6 +153,96 @@ class TestDelegation:
                                           delegate=create_user(),
                                           delegator=delegator)
 
-        assert Delegation.objects.count() == 1
-        assert Delegation.get_incomings(delegate, tag).count() == 1
-        assert Delegation.get_incomings(delegator, tag).count() == 0
+        assert delegate.incoming_delegations.count() == 1
+        assert delegate.outgoing_delegations.count() == 0
+        assert delegator.incoming_delegations.count() == 0
+        assert delegator.outgoing_delegations.count() == 1
+
+        assert Delegation.objects.create(tag=tag,
+                                         delegate=delegate,
+                                         delegator=create_user())
+
+        assert delegate.incoming_delegations.count() == 2
+
+    def test_recurse(self, create_user):
+        tag = Tag.objects.create(name='TAG')
+        delegate = create_user()
+        last_delegator = create_user()
+
+        delegations = []
+        for i in range(5):
+            delegations.append(Delegation(tag=tag,
+                                          delegate=delegate,
+                                          delegator=create_user()))
+
+        delegations.append(Delegation(tag=tag,
+                                      delegate=delegate,
+                                      delegator=last_delegator))
+
+        Delegation.objects.bulk_create(delegations)
+
+        # num 1     -> delegate         delegate -> ramdom_user
+        # num 2     -> delegate
+        # num 3     -> delegate
+        # num 4     -> delegate
+        # num 5     -> delegate
+        # last_del  -> delegate
+
+        assert Delegation.objects.count() == 6
+        assert delegate.vote_weight(tag) == 6  # le delege a un poids de 6 votes
+        assert last_delegator.vote_weight(tag) == 0  # le dernier a un poinds de zero
+
+    #
+    def test_simple_cycling(self, create_user):
+        tag = Tag.objects.create(name='TAG')
+        delegate = create_user(username="delegate")
+        delegator = create_user(username="delegator")
+
+        Delegation.objects.create(tag=tag,
+                                  delegate=delegate,
+                                  delegator=delegator)
+
+        Delegation.objects.create(tag=tag,
+                                  delegate=delegator,
+                                  delegator=delegate)
+
+        logger.info(logger.name)
+        assert delegate.delegation_chain(tag=tag), \
+            "must not raise recursion error"
+
+    def test_cycling(self, create_user):
+        tag = Tag.objects.create(name='TAG')
+        a = create_user(username="A")
+        b = create_user(username="b")
+        c = create_user(username="c")
+
+        # c -> a -> b -> c
+        delegations = [Delegation(tag=tag,
+                                  delegate=a,
+                                  delegator=c),
+                       Delegation(tag=tag,
+                                  delegate=b,
+                                  delegator=a),
+                       Delegation(tag=tag,
+                                  delegate=c,
+                                  delegator=b)]
+
+        # let's give b some incoming delegations:
+        for i in range(5):
+            delegations.append(Delegation(tag=tag,
+                                          delegator=create_user(),
+                                          delegate=b))
+        solo_user = create_user()
+        delegations.append(Delegation(tag=tag,
+                                      delegator=solo_user,
+                                      delegate=b))
+
+        Delegation.objects.bulk_create(delegations)
+
+        a_result = a.delegation_chain(tag)
+        assert a_result.count() == 9
+        assert solo_user.vote_weight(tag) == 0
+
+        assert list(a_result) \
+               == list(c.delegation_chain(tag)) \
+               == list(b.delegation_chain(tag))

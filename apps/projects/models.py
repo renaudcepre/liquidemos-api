@@ -7,7 +7,6 @@ from django.utils.text import slugify
 
 from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.commons.utils.mptree.models import MaterializedPathNodeModel
-from apps.users.models import User
 
 
 class Tag(models.Model):
@@ -18,33 +17,18 @@ class Tag(models.Model):
 
 
 class Delegation(DatedModelMixin, models.Model):
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    delegate = models.ForeignKey(User, on_delete=models.CASCADE,
+    tag = models.ForeignKey(Tag,
+                            on_delete=models.CASCADE)
+    delegate = models.ForeignKey("users.User", on_delete=models.CASCADE,
                                  related_name='incoming_delegations')
-    delegator = models.ForeignKey(User, on_delete=models.CASCADE,
+    delegator = models.ForeignKey("users.User", on_delete=models.CASCADE,
                                   related_name='outgoing_delegations')
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['delegate', 'delegator', 'tag'],
+            # A user can delegate his vote for one tag to one user.
+            models.UniqueConstraint(fields=['delegator', 'tag'],
                                     name='unique delegation')]
-
-    @staticmethod
-    def _recurse(user, tag, outgoing=True):
-        del_list = []
-        qs = user.incoming_delegations if outgoing else user.outgoing_delegations
-
-        for delegation in qs.filter(tag=tag):
-            del_list += Delegation.get_incomings(delegation.delegator, tag)
-            del_list.append(delegation)
-        return del_list
-
-    @staticmethod
-    def get_incomings(user: User, tag: Tag) -> QuerySet:
-        """Return the list of all the delegation for the user for the specified
-        tag recursively."""
-        pk_list = [d.pk for d in Delegation._recurse(user, tag)]
-        return Delegation.objects.filter(pk__in=pk_list)
 
     def __str__(self):
         return f"{self.delegator} -> {self.delegate} " \
@@ -53,7 +37,7 @@ class Delegation(DatedModelMixin, models.Model):
 
 class Vote(DatedModelMixin, models.Model):
     upvote = models.BooleanField(null=False, blank=False, default=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
 
     def __str__(self):
@@ -81,7 +65,7 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
     slug = models.SlugField(editable=False)
     tags = models.ManyToManyField(Tag, blank=True)
 
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey("users.User", on_delete=models.CASCADE)
 
     depends_on = models.ManyToManyField("Project",
                                         related_name='dependencies',
