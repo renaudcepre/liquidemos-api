@@ -6,9 +6,8 @@ import uuid
 import pytest
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.utils.text import slugify
 
-from apps.projects.models import Project, AlternativeGroup, Vote, Tag, Delegation
+from apps.projects.models import *
 
 logger = logging.getLogger(__name__)
 
@@ -166,12 +165,18 @@ class TestDelegation:
 
     def test_recurse(self, create_user):
         tag = Tag.objects.create(name='TAG')
+        other_tag = Tag.objects.create(name='OTHER')
         delegate = create_user()
         last_delegator = create_user()
 
         delegations = []
         for i in range(5):
             delegations.append(Delegation(tag=tag,
+                                          delegate=delegate,
+                                          delegator=create_user()))
+            # Create delegation with other tag for ensure that the filtering
+            # work
+            delegations.append(Delegation(tag=other_tag,
                                           delegate=delegate,
                                           delegator=create_user()))
 
@@ -188,9 +193,10 @@ class TestDelegation:
         # num 5     -> delegate
         # last_del  -> delegate
 
-        assert Delegation.objects.count() == 6
-        assert delegate.vote_weight(tag) == 6  # le delege a un poids de 6 votes
-        assert last_delegator.vote_weight(tag) == 0  # le dernier a un poinds de zero
+        assert delegate.delegation_chain(
+            tag).count() == 6  # le delege a un poids de 6 votes
+        assert last_delegator.delegation_chain(
+            tag).count() == 0  # le dernier a un poinds de zero
 
     #
     def test_simple_cycling(self, create_user):
@@ -241,7 +247,7 @@ class TestDelegation:
 
         a_result = a.delegation_chain(tag)
         assert a_result.count() == 9
-        assert solo_user.vote_weight(tag) == 0
+        assert solo_user.delegation_chain(tag).count() == 0
 
         assert list(a_result) \
                == list(c.delegation_chain(tag)) \
