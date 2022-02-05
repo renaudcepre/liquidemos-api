@@ -48,14 +48,14 @@ def create_cyclic():
 
 
 def run():
-    @query_info(show_sql=False)
+    # @query_info(show_sql=False)
     def iterative(user, tag):
-        iterative = user.delegation_chain(tag, direction='out')
+        iterative = user.delegation_chain(tag, direction='in')
         # print(len(iterative))
-        print(iterative)
+        # print(iterative)
 
-    user = User.objects.get(username='a')
-    tag = Tag.objects.get(name='CYCLIC')
+    user = User.objects.get(username='root')
+    tag = Tag.objects.get(name='ISOLATED')
 
     import statistics
     import timeit
@@ -64,7 +64,7 @@ def run():
         timeit.repeat(setup='from apps.users.models import User, Tag',
                       stmt=functools.partial(iterative, user, tag),
                       repeat=20,
-                      number=1))
+                      number=10))
     print(f"Mean time: {mean:.4f}s")
     # print(statistics.mean(
     #     timeit.repeat(setup='from apps.users.models import User, Tag',

@@ -10,8 +10,7 @@ class User(AbstractUser):
     def delegation_chain(self, tag, direction='in') -> QuerySet:
         assert direction in ('in', 'out')
 
-        qs = Delegation.objects.filter(tag=tag).select_related('delegator',
-                                                               'delegate', 'pk')
+        qs = Delegation.objects.filter(tag=tag)
 
         if direction == 'in':
             qs = qs.values_list('delegator__pk', 'delegate__pk', 'pk')
