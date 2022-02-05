@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.db.models import QuerySet
 
 from apps.projects.models import Delegation, Tag
@@ -28,10 +27,3 @@ class User(AbstractUser):
             stack.extend(filter(lambda x: x[1] == node[0], as_list))
 
         return Delegation.objects.filter(pk__in=visited)
-
-
-class VoteWeight(models.Model):
-    tag = models.ForeignKey(Tag,
-                            on_delete=models.CASCADE)
-    value = models.IntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
