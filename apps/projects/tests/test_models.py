@@ -193,12 +193,11 @@ class TestDelegation:
         # num 5     -> delegate
         # last_del  -> delegate
 
-        assert delegate.delegation_chain(
-            tag).count() == 6  # le delege a un poids de 6 votes
-        assert last_delegator.delegation_chain(
-            tag).count() == 0  # le dernier a un poinds de zero
+        assert delegate.delegation_chain(tag).count() == 6
+        assert last_delegator.delegation_chain(tag).count() == 0
+        assert delegate.delegation_chain(tag, 'out').count() == 0
+        assert last_delegator.delegation_chain(tag, 'out').count() == 1
 
-    #
     def test_simple_cycling(self, create_user):
         tag = Tag.objects.create(name='TAG')
         delegate = create_user(username="delegate")

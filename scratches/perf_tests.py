@@ -33,23 +33,39 @@ def create(number=1000):
     Delegation.objects.bulk_create(delegations)
 
 
+@query_info()
+def create_cyclic():
+    a = User.objects.get_or_create(username='a')[0]
+    b = User.objects.get_or_create(username='b')[0]
+    c = User.objects.get_or_create(username='c')[0]
+    tag = Tag.objects.get_or_create(name='CYCLIC')[0]
+    delegations = [
+        Delegation(delegate=a, delegator=b, tag=tag),
+        Delegation(delegate=b, delegator=c, tag=tag),
+        Delegation(delegate=c, delegator=a, tag=tag)
+    ]
+    Delegation.objects.bulk_create(delegations)
+
+
 def run():
-    # @query_info(show_sql=False)
+    @query_info(show_sql=False)
     def iterative(user, tag):
-        iterative = user.delegation_chain(tag, direction='in')
-        print(len(iterative))
+        iterative = user.delegation_chain(tag, direction='out')
+        # print(len(iterative))
+        print(iterative)
 
-    user = User.objects.get(username='500')
-    tag = Tag.objects.get(name='ISOLATED')
+    user = User.objects.get(username='a')
+    tag = Tag.objects.get(name='CYCLIC')
 
-    # code(user, tag)
     import statistics
     import timeit
-    print(statistics.mean(
+    # iterative(user, tag)
+    mean = statistics.mean(
         timeit.repeat(setup='from apps.users.models import User, Tag',
                       stmt=functools.partial(iterative, user, tag),
-                      repeat=10,
-                      number=1)))
+                      repeat=20,
+                      number=1))
+    print(f"Mean time: {mean:.4f}s")
     # print(statistics.mean(
     #     timeit.repeat(setup='from apps.users.models import User, Tag',
     #                   stmt=functools.partial(recursive, user, tag),
@@ -59,4 +75,5 @@ def run():
 
 if __name__ == '__main__':
     # create()
+    # create_cyclic()
     run()

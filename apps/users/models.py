@@ -10,23 +10,25 @@ class User(AbstractUser):
     def delegation_chain(self, tag, direction='in') -> QuerySet:
         assert direction in ('in', 'out')
 
-        visited = []
+        qs = Delegation.objects.filter(tag=tag).select_related('delegator',
+                                                               'delegate', 'pk')
+
         if direction == 'in':
-            stack = list(self.incoming_delegations.filter(tag=tag))
+            qs = qs.values_list('delegator__pk', 'delegate__pk', 'pk')
         else:
-            stack = list(self.outgoing_delegations.filter(tag=tag))
+            qs = qs.values_list('delegate__pk', 'delegator__pk', 'pk')
+
+        visited = []
+        as_list = list(qs)
+        stack = list(filter(lambda x: x[1] == self.pk, as_list))
 
         while stack:
             node = stack.pop()
-            if node not in visited:
-                visited.append(node)
-                if direction == 'in':
-                    qs = node.delegator.incoming_delegations.filter(tag=tag)
-                else:
-                    qs = node.delegate.outgoing_delegations.filter(tag=tag)
-                stack.extend(list(qs))
+            visited.append(node[2])
+            as_list.remove(node)
+            stack.extend(filter(lambda x: x[1] == node[0], as_list))
 
-        return Delegation.objects.filter(pk__in=[d.pk for d in visited])
+        return Delegation.objects.filter(pk__in=visited)
 
 
 class VoteWeight(models.Model):
