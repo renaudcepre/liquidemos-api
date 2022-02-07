@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from apps.projects.models import Project, Tag, AlternativeGroup, Vote, Delegation
+from apps.projects.models import (Project, Tag, AlternativeGroup,
+                                  Vote, Delegation)
 
 
 class TagListFilter(admin.SimpleListFilter):
