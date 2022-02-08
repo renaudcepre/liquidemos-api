@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'rest_framework',
 
     'apps.users',
 
@@ -148,7 +149,8 @@ LOGGING = {
     },
     'formatters': {
         'default': {
-            'format': '{levelname} {asctime} {module} {message}', 'datefmt': '%Y-%m-%d %H:%M',
+            'format': '{levelname} {asctime} {module} {message}',
+            'datefmt': '%Y-%m-%d %H:%M',
             'style': '{',
         },
     },
@@ -165,3 +167,9 @@ LOGGING = {
 }
 
 logger = logging.getLogger("liquidemos_log")
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
