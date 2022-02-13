@@ -27,6 +27,14 @@ router.registry.extend(projects_router.registry)
 urlpatterns = [
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    path('__debug__/', include('debug_toolbar.urls')),
+    path('api/auth/', include('apps.users.urls'))
+
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        # DRF Browsable-api login / logout
+        path('api-auth/', include('rest_framework.urls')),
+        # debug toolbar
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]
