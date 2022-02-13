@@ -39,7 +39,7 @@ def create_project(db, create_user):
     return _make_project
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def project_tree(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
         call_command('loaddata', 'test_projects.json')
@@ -49,8 +49,8 @@ class TestProject:
     def test_project_model(self, create_project):
         p = create_project(name='test project')
         p.save()
-        assert p.path == '0'
-        assert p.node_id == 0
+        assert p.path == '0', f"path {Project.objects.count()}"
+        assert p.node_id == 0, "mode_id"
         assert p.depth == 0
         assert p.name == 'test project'
         assert p.slug == slugify('test project')
@@ -211,7 +211,6 @@ class TestDelegation:
                                   delegate=delegator,
                                   delegator=delegate)
 
-        logger.info(logger.name)
         assert delegate.delegation_chain(tag=tag), \
             "must not raise recursion error"
 
