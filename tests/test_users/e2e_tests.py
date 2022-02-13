@@ -16,6 +16,9 @@ class TestRestAuthEndpoints:
     endpoint = '/api/auth'
 
     def get_verify_url(self):
+        """
+        Extract verification url form the email sended after registration
+        """
         token_regex = rf"({self.endpoint}/account-confirm-email/[^/]+/)"
         regex_result = re.search(token_regex, mail.outbox[0].body)
 

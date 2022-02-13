@@ -9,6 +9,13 @@ from apps.commons.utils.model_mixins import DatedModelMixin
 from apps.commons.utils.mptree.models import MaterializedPathNodeModel
 
 
+class Theme(models.Model):
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Tag(models.Model):
     name = models.CharField(max_length=32)
 
@@ -60,10 +67,12 @@ class Project(DatedModelMixin, MaterializedPathNodeModel):
     Each project can have child projects.
     The validation of a project depends on the validation of its children.
     """
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
     description = models.TextField(blank=True)
     slug = models.SlugField(editable=False)
     tags = models.ManyToManyField(Tag, blank=True)
+
+    theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True)
 
     created_by = models.ForeignKey("users.User", on_delete=models.CASCADE)
 

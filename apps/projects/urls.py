@@ -1,8 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter
 
-from apps.projects.views import ProjectListCreateAPIView, ProjectDetail
+from apps.projects.views import ProjectViewSet, ThemeViewSet
+
+router = SimpleRouter()
+router.register('projects', ProjectViewSet, 'project')
+router.register('themes', ThemeViewSet, 'theme')
 
 urlpatterns = [
-    path('', ProjectListCreateAPIView.as_view(), name='projects'),
-    path('<str:slug>/', ProjectDetail.as_view(), name='project_detail'),
+    path('', include(router.urls)),
 ]

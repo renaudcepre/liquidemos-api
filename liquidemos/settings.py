@@ -36,8 +36,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'debug_toolbar',
     'rest_framework',
+    'rest_framework.authtoken',
+
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
 
     'apps.users',
 
@@ -171,5 +179,40 @@ logger = logging.getLogger("liquidemos_log")
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ],
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Enable JWT Authentication instead of Token/Session based
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'liquidemos-auth'
+
+SITE_ID = 1
+
+# Allow users to be authenticated upon login and also to allow logging
+# in to the Django admin irrespective of the django-allauth authentication
+# backend.
+AUTHENTICATION_BACKENDS = [
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# ALLAUTH
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
+# Allow to verify the user when the user opens the link received in the email
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+# The URL or named URL pattern where requests are redirected after login.
+LOGIN_URL = 'http://localhost:8000/api/auth/login'  # tmp
+
+DEFAULT_AUTHENTICATION_CLASSES = (
+    'rest_framework.authentication.SessionAuthentication',
+    'rest_framework.authentication.TokenAuthentication',
+)

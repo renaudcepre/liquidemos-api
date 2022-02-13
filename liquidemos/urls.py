@@ -15,10 +15,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from apps.projects.urls import router as projects_router
+from liquidemos import settings
+
+router = DefaultRouter()
+# router.registry.extend(users_router.registry)
+router.registry.extend(projects_router.registry)
 
 urlpatterns = [
-    path('projects/', include('apps.projects.urls')),
+    path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    path('__debug__/', include('debug_toolbar.urls')),
+    path('api/auth/', include('apps.users.urls'))
+
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        # DRF Browsable-api login / logout
+        path('api-auth/', include('rest_framework.urls')),
+        # debug toolbar
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]
