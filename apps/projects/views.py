@@ -1,18 +1,27 @@
-from rest_framework import generics
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from apps.projects.models import Project
-from apps.projects.serializers import ProjectSerializer
+from apps.projects.models import Project, Theme
+from apps.projects.serializers import ProjectSerializer, ThemeSerializer
 
 
-class ProjectListCreateAPIView(generics.ListCreateAPIView):
+class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    A simple ViewSet for viewing and editing projects.
+    """
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        user = self.request.user
+        serializer.save(created_by=user)
 
 
-class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    lookup_field = 'slug'
+class ThemeViewSet(viewsets.ModelViewSet):
+    """
+    A simple ViewSet for viewing and editing themes.
+    """
+    queryset = Theme.objects.all()
+    serializer_class = ThemeSerializer
+    permission_classes = [IsAuthenticated]
