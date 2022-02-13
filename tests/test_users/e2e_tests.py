@@ -68,3 +68,19 @@ class TestRestAuthEndpoints:
 
         allauth_user_email.refresh_from_db()
         assert allauth_user_email.verified
+
+    def test_login(self, registered_user, api_client):
+        user = registered_user()
+
+        data = {"username": user.username,
+                "password": 'test',
+                }
+
+        login_response = api_client.post(f"{self.endpoint}/login/", data=data)
+        user_response = api_client.get(f"{self.endpoint}/user/")
+
+        assert login_response.status_code == status.HTTP_200_OK
+        assert api_client.cookies[settings.JWT_AUTH_COOKIE]
+        assert user_response.status_code == status.HTTP_200_OK
+        assert user_response.data['username'] == user.username
+        assert user_response.data['email'] == user.email
