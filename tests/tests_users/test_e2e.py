@@ -1,4 +1,3 @@
-import json
 import re
 
 import pytest
@@ -15,11 +14,11 @@ pytestmark = pytest.mark.django_db
 class TestRestAuthEndpoints:
     endpoint = '/api/auth'
 
-    def get_verify_url(self):
+    def get_verify_url(self, name: str):
         """
         Extract verification url form the email sended after registration
         """
-        token_regex = rf"({self.endpoint}/account-confirm-email/[^/]+/)"
+        token_regex = rf"({self.endpoint}/{name}/[^\s]+)"
         regex_result = re.search(token_regex, mail.outbox[0].body)
 
         assert regex_result.groups()
@@ -49,8 +48,7 @@ class TestRestAuthEndpoints:
 
         # User is created and the validation is sent to the user.
         assert response.status_code == status.HTTP_201_CREATED
-        assert json.loads(response.content) == {
-            'detail': 'Verification e-mail sent.'}
+        assert response.data == {'detail': 'Verification e-mail sent.'}
         assert mail.outbox[0].to[0] == data['email']
 
         created_user = User.objects.get(username=data['username'])
@@ -61,7 +59,8 @@ class TestRestAuthEndpoints:
         assert not allauth_user_email.verified
 
         # We send the GET request to verify the email address.
-        verify_response = api_client.get(self.get_verify_url())
+        verify_response = api_client.get(
+            self.get_verify_url(name='account-confirm-email'))
 
         assert verify_response.status_code == status.HTTP_302_FOUND
         assert verify_response.url == settings.LOGIN_URL
@@ -102,3 +101,29 @@ class TestRestAuthEndpoints:
         assert user_response.data['email'] == user.email
         assert user_response.data['first_name'] == user.first_name
         assert user_response.data['last_name'] == user.last_name
+
+    def test_password_reset(self, logged_user_and_client):
+        user, api_client = logged_user_and_client(password='old_password')
+        response = api_client.post(path=f"{self.endpoint}/password/reset/",
+                                   data={"email": user.email})
+
+        verify_url = self.get_verify_url(name='password-reset-confirm')
+        uid, token, _ = verify_url.split('/')[-3:]
+        data = {
+            "new_password1": "new_password",
+            "new_password2": "new_password",
+            "uid": uid,
+            "token": token
+        }
+
+        assert user.check_password('old_password')
+        verify_response = api_client.post(
+            path=verify_url,
+            data=data)
+
+        user.refresh_from_db()
+        assert user.check_password('new_password')
+        assert response.status_code == status.HTTP_200_OK
+        assert verify_response.status_code == status.HTTP_200_OK
+        assert verify_response.data == {
+            'detail': 'Password has been reset with the new password.'}

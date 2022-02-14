@@ -12,8 +12,8 @@ def api_client():
 
 @pytest.fixture
 def registered_user():
-    def _make():
-        user = UserFactory(password="test")
+    def _make(password='test'):
+        user = UserFactory(password=password)
         EmailAddress.objects.create(user=user,
                                     email=user.email,
                                     primary=True,
@@ -25,10 +25,10 @@ def registered_user():
 
 @pytest.fixture
 def logged_user_and_client(registered_user, api_client):
-    def _make():
-        user = registered_user()
+    def _make(password='test'):
+        user = registered_user(password=password)
         data = {"username": user.username,
-                "password": 'test',
+                "password": password,
                 }
         api_client.post(f"/api/auth/login/", data=data)
         return user, api_client
