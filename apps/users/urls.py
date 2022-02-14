@@ -1,8 +1,15 @@
 from allauth.account.views import ConfirmEmailView
 from dj_rest_auth.registration.views import RegisterView, VerifyEmailView
+
+from dj_rest_auth.views import PasswordResetConfirmView, PasswordResetView
+
 from django.urls import path, include, re_path
 
 urlpatterns = [
+    path('password-reset/', PasswordResetView.as_view()),
+    path('password-reset-confirm/<uidb64>/<token>/',
+         PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
     path("", include("dj_rest_auth.urls")),
     path('account-confirm-email/<str:key>/', ConfirmEmailView.as_view()),
     path('register/', RegisterView.as_view()),
