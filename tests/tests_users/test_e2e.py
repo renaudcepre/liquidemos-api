@@ -92,3 +92,13 @@ class TestRestAuthEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         assert user_response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_current_user(self, logged_user_and_client):
+        user, api_client = logged_user_and_client()
+        user_response = api_client.get(f"{self.endpoint}/user/")
+
+        assert user_response.status_code == status.HTTP_200_OK
+        assert user_response.data['username'] == user.username
+        assert user_response.data['email'] == user.email
+        assert user_response.data['first_name'] == user.first_name
+        assert user_response.data['last_name'] == user.last_name
