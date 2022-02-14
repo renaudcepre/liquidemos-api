@@ -21,7 +21,6 @@ from apps.projects.urls import router as projects_router
 from liquidemos import settings
 
 router = DefaultRouter()
-# router.registry.extend(users_router.registry)
 router.registry.extend(projects_router.registry)
 
 urlpatterns = [

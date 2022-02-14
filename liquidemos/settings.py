@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*el$yn_8o()&-1hs)#pqy69k)za1*4fg!2nr6zyu3_7v&c$3%i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
@@ -177,11 +177,16 @@ LOGGING = {
 logger = logging.getLogger("liquidemos_log")
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
     ],
 }
 
@@ -193,14 +198,6 @@ JWT_AUTH_COOKIE = 'liquidemos-auth'
 
 SITE_ID = 1
 
-# Allow users to be authenticated upon login and also to allow logging
-# in to the Django admin irrespective of the django-allauth authentication
-# backend.
-AUTHENTICATION_BACKENDS = [
-    'allauth.account.auth_backends.AuthenticationBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
 # ALLAUTH
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
@@ -211,8 +208,3 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 # The URL or named URL pattern where requests are redirected after login.
 LOGIN_URL = 'http://localhost:8000/api/auth/login'  # tmp
-
-DEFAULT_AUTHENTICATION_CLASSES = (
-    'rest_framework.authentication.SessionAuthentication',
-    'rest_framework.authentication.TokenAuthentication',
-)
