@@ -7,5 +7,9 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = get_user_model()
 
     password = factory.PostGenerationMethodCall('set_password', 'test')
-    email = factory.Faker('email')
-    username = factory.Faker('user_name')
+    first_name = factory.Faker('first_name')
+    last_name = factory.Faker('last_name')
+    username = factory.LazyAttribute(
+        lambda a: '{}{}'.format(a.first_name[:1], a.last_name).lower())
+    email = factory.LazyAttribute(
+        lambda a: '{}.{}@example.com'.format(a.first_name, a.last_name).lower())
