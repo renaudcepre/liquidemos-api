@@ -1,18 +1,14 @@
-"""Unit tests only. The database is not requested."""
+"""Unit test only. The database is not requested."""
 
 from typing import List
 
 import pytest
 
-from apps.commons.utils.mptree.models import MaterializedPathNodeModel
-
-
-class NodeModel(MaterializedPathNodeModel):
-    pass
+from apps.projects.models import Project
 
 
 def test_node_id():
-    node = NodeModel(parent=None)
+    node = Project(parent=None)
     encoder = node.encoder
 
     node.path = 'ff/0/1/ff/9'
@@ -24,7 +20,7 @@ def test_node_id():
 def _create_nodes(ids: List[int]):
     nodes = []
     for i in ids:
-        node = NodeModel()
+        node = Project()
         node.path = str(i)
         nodes.append(node)
     return nodes
@@ -40,5 +36,5 @@ def _create_nodes(ids: List[int]):
     (_create_nodes([0, 1]), 2),
 ])
 def test_next_id(row, expected):
-    node = NodeModel(parent=None)
+    node = Project(parent=None)
     assert node.next_id(row) == expected

@@ -1,24 +1,25 @@
 from allauth.account.views import ConfirmEmailView
-from dj_rest_auth.registration.views import RegisterView
-from django.urls import path, include, re_path
+from dj_rest_auth.registration.views import RegisterView, VerifyEmailView
 
-from apps.users.views import VerifyEmailView
+from dj_rest_auth.views import PasswordResetConfirmView, PasswordResetView
 
-# router = SimpleRouter()
-# router.register('users', UserViewSet, 'user')
+from django.urls import path, include
 
 urlpatterns = [
-    path("", include("dj_rest_auth.urls")),
-    path('account-confirm-email/<str:key>/', ConfirmEmailView.as_view()),
-    path('register/', RegisterView.as_view()),
-    # path('login/', LoginView.as_view()),
-    # path('logout/', LogoutView.as_view()),
+    # Password Reset
+    path('password-reset/', PasswordResetView.as_view()),
+    path('password-reset-confirm/<uidb64>/<token>/',
+         PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
-    path('verify-email/',
-         VerifyEmailView.as_view(), name='rest_verify_email'),
-    path('account-confirm-email/',
-         VerifyEmailView.as_view(), name='account_email_verification_sent'),
-    re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$',
-            VerifyEmailView.as_view(), name='account_confirm_email'),
-    # path('', include(router.urls)),
+    # Login / logout / password change / user
+    path("", include("dj_rest_auth.urls")),
+
+    # Registration
+    path('register/', RegisterView.as_view()),
+
+    # Account confirmation
+    path('account-confirm-email/<str:key>/', ConfirmEmailView.as_view(),
+         name='account_confirm_email'),
+    path('account-confirm-email/', VerifyEmailView.as_view(),
+         name='account_email_verification_sent'),
 ]
