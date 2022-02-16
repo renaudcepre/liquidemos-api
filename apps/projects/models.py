@@ -47,6 +47,12 @@ class Vote(DatedModelMixin, models.Model):
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
 
+    class Meta:
+        constraints = [
+            # A user can only vote once for a project.
+            models.UniqueConstraint(fields=['user', 'project'],
+                                    name='unique vote')]
+
     def __str__(self):
         return f"{self.user} " \
                f"{'up' if self.upvote else ''}vote" \
