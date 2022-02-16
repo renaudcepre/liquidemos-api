@@ -1,25 +1,29 @@
 from allauth.account.views import ConfirmEmailView
 from dj_rest_auth.registration.views import RegisterView, VerifyEmailView
-
 from dj_rest_auth.views import PasswordResetConfirmView, PasswordResetView
-
 from django.urls import path, include
+from rest_framework.routers import SimpleRouter
+
+from apps.users.views import UserViewSet
+
+router = SimpleRouter()
+router.register('users', UserViewSet, 'user')
 
 urlpatterns = [
+    path("", include(router.urls)),
     # Password Reset
-    path('password-reset/', PasswordResetView.as_view()),
-    path('password-reset-confirm/<uidb64>/<token>/',
+    path('auth/password-reset/', PasswordResetView.as_view()),
+    path('auth/password-reset-confirm/<uidb64>/<token>/',
          PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-
     # Login / logout / password change / user
-    path("", include("dj_rest_auth.urls")),
+    path("auth/", include("dj_rest_auth.urls")),
 
     # Registration
-    path('register/', RegisterView.as_view()),
+    path('auth/register/', RegisterView.as_view()),
 
     # Account confirmation
-    path('account-confirm-email/<str:key>/', ConfirmEmailView.as_view(),
+    path('auth/account-confirm-email/<str:key>/', ConfirmEmailView.as_view(),
          name='account_confirm_email'),
-    path('account-confirm-email/', VerifyEmailView.as_view(),
+    path('auth/account-confirm-email/', VerifyEmailView.as_view(),
          name='account_email_verification_sent'),
 ]

@@ -18,15 +18,18 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from apps.projects.urls import router as projects_router
+from apps.users.urls import router as user_router
 from liquidemos import settings
 
 router = DefaultRouter()
 router.registry.extend(projects_router.registry)
+router.registry.extend(user_router.registry)
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('api/', include('apps.projects.urls')),
     path('admin/', admin.site.urls),
-    path('api/auth/', include('apps.users.urls'))
+    path('api/', include('apps.users.urls'))
 
 ]
 
