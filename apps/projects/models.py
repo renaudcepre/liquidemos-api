@@ -24,8 +24,8 @@ class Tag(models.Model):
 
 
 class Delegation(DatedModelMixin, models.Model):
-    tag = models.ForeignKey(Tag,
-                            on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme,
+                              on_delete=models.CASCADE)
     delegate = models.ForeignKey("users.User", on_delete=models.CASCADE,
                                  related_name='incoming_delegations')
     delegator = models.ForeignKey("users.User", on_delete=models.CASCADE,
@@ -34,16 +34,17 @@ class Delegation(DatedModelMixin, models.Model):
     class Meta:
         constraints = [
             # A user can delegate his vote for one tag to one user.
-            models.UniqueConstraint(fields=['delegator', 'tag'],
+            models.UniqueConstraint(fields=['delegator', 'theme'],
                                     name='unique delegation')]
 
     def __str__(self):
         return f"{self.delegator} -> {self.delegate} " \
-               f"for {self.tag.name}"
+               f"for {self.theme.name}"
 
 
 class Vote(DatedModelMixin, models.Model):
     upvote = models.BooleanField(null=False, blank=False, default=True)
+    weight = models.PositiveIntegerField(default=0, editable=False)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
 
@@ -52,6 +53,10 @@ class Vote(DatedModelMixin, models.Model):
             # A user can only vote once for a project.
             models.UniqueConstraint(fields=['user', 'project'],
                                     name='unique vote')]
+
+    def save(self, *args, **kwargs):
+        # self.weight = self.user.vote_weight(self.project.theme)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user} " \

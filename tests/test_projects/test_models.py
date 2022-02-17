@@ -134,21 +134,24 @@ class TestVote:
 
 class TestDelegation:
     def test_delegation(self, create_user):
-        tag = Tag.objects.create(name='TAG')
+        theme = Theme.objects.create(name='THEME')
+        project = Project.objects.create(name='TEST',
+                                         theme=theme,
+                                         created_by=create_user())
         delegate = create_user(username="delegate")
         delegator = create_user(username="delegator")
 
-        Delegation.objects.create(tag=tag,
+        Delegation.objects.create(theme=theme,
                                   delegate=delegate,
                                   delegator=delegator)
 
         with pytest.raises(IntegrityError):
             # Check UniqueConstraints
             with transaction.atomic():
-                Delegation.objects.create(tag=tag,
+                Delegation.objects.create(theme=theme,
                                           delegate=delegate,
                                           delegator=delegator)
-                Delegation.objects.create(tag=tag,
+                Delegation.objects.create(theme=theme,
                                           delegate=create_user(),
                                           delegator=delegator)
 
@@ -157,96 +160,136 @@ class TestDelegation:
         assert delegator.incoming_delegations.count() == 0
         assert delegator.outgoing_delegations.count() == 1
 
-        assert Delegation.objects.create(tag=tag,
+        assert Delegation.objects.create(theme=theme,
                                          delegate=delegate,
                                          delegator=create_user())
 
         assert delegate.incoming_delegations.count() == 2
 
     def test_recurse(self, create_user):
-        tag = Tag.objects.create(name='TAG')
-        other_tag = Tag.objects.create(name='OTHER')
-        delegate = create_user()
-        last_delegator = create_user()
+        theme = Theme.objects.create(name='THEME')
+        other_theme = Theme.objects.create(name='OTHER_THEME')
+        project = Project.objects.create(name='TEST',
+                                         theme=theme,
+                                         created_by=create_user())
+        delegate = create_user(username='delegate')
+        last_delegator = create_user(username='last_delegator')
 
         delegations = []
         for i in range(5):
-            delegations.append(Delegation(tag=tag,
+            delegations.append(Delegation(theme=theme,
                                           delegate=delegate,
-                                          delegator=create_user()))
-            # Create delegation with other tag for ensure that the filtering
+                                          delegator=create_user(
+                                              username=str(i))))
+            # Create delegation with other theme for ensure that the filtering
             # work
-            delegations.append(Delegation(tag=other_tag,
+            delegations.append(Delegation(theme=other_theme,
                                           delegate=delegate,
                                           delegator=create_user()))
 
-        delegations.append(Delegation(tag=tag,
+        delegations.append(Delegation(theme=theme,
                                       delegate=delegate,
                                       delegator=last_delegator))
 
         Delegation.objects.bulk_create(delegations)
 
-        # num 1     -> delegate         delegate -> ramdom_user
+        # For Theme THEME
+        # num 1     -> delegate
         # num 2     -> delegate
         # num 3     -> delegate
         # num 4     -> delegate
         # num 5     -> delegate
         # last_del  -> delegate
 
-        assert delegate.delegation_chain(tag).count() == 6
-        assert last_delegator.delegation_chain(tag).count() == 0
-        assert delegate.delegation_chain(tag, 'out').count() == 0
-        assert last_delegator.delegation_chain(tag, 'out').count() == 1
+        assert delegate.delegation_chain(project).count() == 6
+        assert last_delegator.delegation_chain(project).count() == 0
+        assert delegate.delegation_chain(project, 'out').count() == 0
+        assert last_delegator.delegation_chain(project, 'out').count() == 1
 
     def test_simple_cycling(self, create_user):
-        tag = Tag.objects.create(name='TAG')
+        theme = Theme.objects.create(name='THEME')
+        project = Project.objects.create(name='TEST',
+                                         theme=theme,
+                                         created_by=create_user())
         delegate = create_user(username="delegate")
         delegator = create_user(username="delegator")
 
-        Delegation.objects.create(tag=tag,
+        Delegation.objects.create(theme=theme,
                                   delegate=delegate,
                                   delegator=delegator)
 
-        Delegation.objects.create(tag=tag,
+        Delegation.objects.create(theme=theme,
                                   delegate=delegator,
                                   delegator=delegate)
 
-        assert delegate.delegation_chain(tag=tag), \
-            "must not raise recursion error"
+        assert delegate.delegation_chain(project=project).count() == 1
 
     def test_cycling(self, create_user):
-        tag = Tag.objects.create(name='TAG')
+        theme = Theme.objects.create(name='THEME')
+        project = Project.objects.create(name='TEST',
+                                         theme=theme,
+                                         created_by=create_user())
         a = create_user(username="A")
         b = create_user(username="b")
         c = create_user(username="c")
 
         # c -> a -> b -> c
-        delegations = [Delegation(tag=tag,
+        delegations = [Delegation(theme=theme,
                                   delegate=a,
                                   delegator=c),
-                       Delegation(tag=tag,
+                       Delegation(theme=theme,
                                   delegate=b,
                                   delegator=a),
-                       Delegation(tag=tag,
+                       Delegation(theme=theme,
                                   delegate=c,
                                   delegator=b)]
 
         # let's give b some incoming delegations:
         for i in range(5):
-            delegations.append(Delegation(tag=tag,
+            delegations.append(Delegation(theme=theme,
                                           delegator=create_user(),
                                           delegate=b))
         solo_user = create_user()
-        delegations.append(Delegation(tag=tag,
+        delegations.append(Delegation(theme=theme,
                                       delegator=solo_user,
                                       delegate=b))
 
         Delegation.objects.bulk_create(delegations)
 
-        a_result = a.delegation_chain(tag)
-        assert a_result.count() == 9
-        assert solo_user.delegation_chain(tag).count() == 0
+        a_result = a.delegation_chain(project=project)
+        assert a_result.count() == 8
+        assert solo_user.vote_weight(project=project) == 0
 
-        assert list(a_result) \
-               == list(c.delegation_chain(tag)) \
-               == list(b.delegation_chain(tag))
+        assert (a.vote_weight(project=project) ==
+                b.vote_weight(project=project) ==
+                c.vote_weight(project=project))
+
+    def test_cycling_cutted_by_vote(self, create_user):
+        theme = Theme.objects.create(name='THEME')
+        project = Project.objects.create(name='TEST',
+                                         theme=theme,
+                                         created_by=create_user())
+        a = create_user(username="A")
+        b = create_user(username="b")
+        c = create_user(username="c")
+
+        # c -> a -> b -> c
+        # 4 -> 2 -> 3 -> 4
+        delegations = [Delegation(theme=theme,
+                                  delegate=a,
+                                  delegator=c),
+                       Delegation(theme=theme,
+                                  delegate=b,
+                                  delegator=a),
+                       Delegation(theme=theme,
+                                  delegate=c,
+                                  delegator=b)]
+
+        Delegation.objects.bulk_create(delegations)
+
+        # b vote for the project.
+        Vote.objects.create(project=project, user=b)
+
+        assert a.vote_weight(project=project) == 1
+        assert b.vote_weight(project=project) == 2
+        assert c.vote_weight(project=project) == 0

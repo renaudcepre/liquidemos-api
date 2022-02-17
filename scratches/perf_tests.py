@@ -7,7 +7,7 @@ from scratches.utils import query_info
 
 django_init.init()
 
-from apps.projects.models import Tag, Delegation
+from apps.projects.models import Tag, Delegation, Project, Theme
 from apps.users.models import User
 
 
@@ -35,37 +35,38 @@ def create(number=1000):
 
 @query_info()
 def create_cyclic():
-    a = User.objects.get_or_create(username='a')[0]
-    b = User.objects.get_or_create(username='b')[0]
-    c = User.objects.get_or_create(username='c')[0]
-    tag = Tag.objects.get_or_create(name='CYCLIC')[0]
+    a, _ = User.objects.get_or_create(username='a')
+    b, _ = User.objects.get_or_create(username='b')
+    c, _ = User.objects.get_or_create(username='c')
+    theme, _ = Theme.objects.get_or_create(name='theme')
     delegations = [
-        Delegation(delegate=a, delegator=b, tag=tag),
-        Delegation(delegate=b, delegator=c, tag=tag),
-        Delegation(delegate=c, delegator=a, tag=tag)
+        Delegation(delegate=a, delegator=b, theme=theme),
+        Delegation(delegate=b, delegator=c, theme=theme),
+        Delegation(delegate=c, delegator=a, theme=theme)
     ]
     Delegation.objects.bulk_create(delegations)
 
 
 def run():
-    # @query_info(show_sql=False)
-    def iterative(user, tag):
-        iterative = user.delegation_chain(tag, direction='in')
-        # print(len(iterative))
-        # print(iterative)
+    @query_info(show_sql=False)
+    def iterative(user, project):
+        iterative = user.delegation_chain(project, direction='in')
+        print(len(iterative))
+        print(iterative)
+        print(user.vote_weight(project))
 
-    user = User.objects.get(username='root')
-    tag = Tag.objects.get(name='ISOLATED')
+    user, _ = User.objects.get_or_create(username='a')
+    theme, _ = Theme.objects.get_or_create(name='theme')
+    project, _ = Project.objects.get_or_create(name='project', theme=theme,
+                                               created_by=user)
 
-    import statistics
-    import timeit
-    # iterative(user, tag)
-    mean = statistics.mean(
-        timeit.repeat(setup='from apps.users.models import User, Tag',
-                      stmt=functools.partial(iterative, user, tag),
-                      repeat=20,
-                      number=10))
-    print(f"Mean time: {mean:.4f}s")
+    iterative(user, project)
+    # mean = statistics.mean(
+    #     timeit.repeat(setup='from apps.users.models import User',
+    #                   stmt=functools.partial(iterative, user, project),
+    #                   repeat=20,
+    #                   number=10))
+    # print(f"Mean time: {mean:.4f}s")
     # print(statistics.mean(
     #     timeit.repeat(setup='from apps.users.models import User, Tag',
     #                   stmt=functools.partial(recursive, user, tag),
@@ -74,6 +75,7 @@ def run():
 
 
 if __name__ == '__main__':
+    # pass
     # create()
     # create_cyclic()
     run()
