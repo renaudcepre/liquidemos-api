@@ -7,7 +7,7 @@ from apps.projects.models import Delegation, Project
 class User(AbstractUser):
 
     def vote_weight(self, project: Project):
-        return self.delegation_chain(project=project).count()
+        return self.delegation_chain(project=project).count() + 1
 
     def delegation_chain(self, project: Project, direction='in') -> QuerySet:
         """
