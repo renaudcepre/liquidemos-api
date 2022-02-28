@@ -2,6 +2,7 @@ import pytest
 from allauth.account.models import EmailAddress
 from rest_framework.test import APIClient
 
+from test_projects.utils import log_user
 from tests.tests_users.factories import UserFactory
 
 
@@ -11,14 +12,27 @@ def api_client():
 
 
 @pytest.fixture
-def registered_user():
-    def _make(password='test'):
-        user = UserFactory(password=password)
-        EmailAddress.objects.create(user=user,
-                                    email=user.email,
-                                    primary=True,
-                                    verified=True)
+def create_user():
+    def _make(password='test', **kwargs):
+        user = UserFactory(password=password, **kwargs)
         return user
+
+    return _make
+
+
+@pytest.fixture
+def registered_user(create_user):
+    def _make(password='test', number=1):
+        users = []
+        for i in range(number):
+            user = create_user(password=password)
+            EmailAddress.objects.create(user=user,
+                                        email=user.email,
+                                        primary=True,
+                                        verified=True)
+            users.append(user)
+
+        return users[0] if number == 1 else users
 
     return _make
 
@@ -27,10 +41,7 @@ def registered_user():
 def logged_user_and_client(registered_user, api_client):
     def _make(password='test'):
         user = registered_user(password=password)
-        data = {"username": user.username,
-                "password": password,
-                }
-        api_client.post(f"/api/auth/login/", data=data)
+        log_user(api_client, user)
         return user, api_client
 
     return _make

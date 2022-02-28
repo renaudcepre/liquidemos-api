@@ -1,4 +1,3 @@
-from django.db.models import Sum
 from rest_framework import serializers
 
 from apps.projects.models import Project, Theme, Vote
@@ -7,8 +6,8 @@ from apps.projects.models import Project, Theme, Vote
 class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
-        fields = ("project", "user", "upvote", "weight")
-        read_only_fields = ('project', 'user', "weight")
+        fields = ("upvote", "weight")
+        read_only_fields = ('project', "weight")
         extra_kwargs = {'upvote': {'required': True}}
 
 
@@ -19,10 +18,14 @@ class ThemeSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    votes = serializers.SerializerMethodField()
+    score = serializers.SerializerMethodField()
 
-    def get_votes(self, instance):
-        return instance.vote_set.aggregate(Sum('weight'))['weight__sum']
+    def get_score(self, instance):
+        total = 0
+        for vote in instance.vote_set.all():
+            total += vote.weight if vote.upvote else -vote.weight
+
+        return total
 
     class Meta:
         model = Project
@@ -31,7 +34,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "description",
             "theme",
             "created_by",
-            'votes',
+            'score',
         ]
 
         read_only_fields = ("created_by", "slug")

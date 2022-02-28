@@ -55,8 +55,16 @@ class Vote(DatedModelMixin, models.Model):
                                     name='unique vote')]
 
     def save(self, *args, **kwargs):
-        # self.weight = self.user.vote_weight(self.project.theme)
+        self.weight = self.user.vote_weight(self.project)
         super().save(*args, **kwargs)
+
+    def update_vote_weight(self):
+        delegations = self.user.delegation_chain(self.project, direction='out')
+        delegates = [d.delegate for d in delegations]
+        votes = Vote.objects.filter(user__in=delegates, project=self.project)
+        for vote in votes:
+            vote.weight = vote.user.vote_weight(vote.project)
+        Vote.objects.bulk_update(votes, fields=('weight',))
 
     def __str__(self):
         return f"{self.user} " \

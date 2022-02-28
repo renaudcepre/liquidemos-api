@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import uuid
 
 import pytest
 from django.core.management import call_command
@@ -10,34 +9,6 @@ from django.db import IntegrityError, transaction
 from apps.projects.models import *
 
 logger = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def create_user(db, django_user_model):
-    """Return a closure that create a user with random values and default password."""
-
-    def _make_user(**kwargs):
-        kwargs['password'] = 'test_password'
-        if 'username' not in kwargs:
-            kwargs['username'] = str(uuid.uuid4())
-        return django_user_model.objects.create_user(**kwargs)
-
-    return _make_user
-
-
-@pytest.fixture
-def create_project(db, create_user):
-    """Return a closure that create a project with random values."""
-
-    def _make_project(**kwargs):
-        if 'name' not in kwargs:
-            kwargs['name'] = str(uuid.uuid4())
-        if 'created_by' not in kwargs:
-            kwargs['created_by'] = create_user()
-        return Project.objects.create(**kwargs)
-
-    return _make_project
-
 
 @pytest.fixture()
 def project_tree(django_db_setup, django_db_blocker):
@@ -131,13 +102,13 @@ class TestVote:
 
         assert vote.user == user
 
-
+@pytest.mark.django_db
 class TestDelegation:
     def test_delegation(self, create_user):
         theme = Theme.objects.create(name='THEME')
-        project = Project.objects.create(name='TEST',
-                                         theme=theme,
-                                         created_by=create_user())
+        Project.objects.create(name='TEST',
+                               theme=theme,
+                               created_by=create_user())
         delegate = create_user(username="delegate")
         delegator = create_user(username="delegator")
 
@@ -166,6 +137,7 @@ class TestDelegation:
 
         assert delegate.incoming_delegations.count() == 2
 
+    @pytest.mark.django_db
     def test_recurse(self, create_user):
         theme = Theme.objects.create(name='THEME')
         other_theme = Theme.objects.create(name='OTHER_THEME')
@@ -206,6 +178,7 @@ class TestDelegation:
         assert delegate.delegation_chain(project, 'out').count() == 0
         assert last_delegator.delegation_chain(project, 'out').count() == 1
 
+    @pytest.mark.django_db
     def test_simple_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
@@ -224,6 +197,7 @@ class TestDelegation:
 
         assert delegate.delegation_chain(project=project).count() == 1
 
+    @pytest.mark.django_db
     def test_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
@@ -258,12 +232,13 @@ class TestDelegation:
 
         a_result = a.delegation_chain(project=project)
         assert a_result.count() == 8
-        assert solo_user.vote_weight(project=project) == 0
+        assert solo_user.vote_weight(project=project) == 1
 
         assert (a.vote_weight(project=project) ==
                 b.vote_weight(project=project) ==
                 c.vote_weight(project=project))
 
+    @pytest.mark.django_db
     def test_cycling_cutted_by_vote(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
@@ -290,6 +265,6 @@ class TestDelegation:
         # b vote for the project.
         Vote.objects.create(project=project, user=b)
 
-        assert a.vote_weight(project=project) == 1
-        assert b.vote_weight(project=project) == 2
-        assert c.vote_weight(project=project) == 0
+        assert a.vote_weight(project=project) == 2
+        assert b.vote_weight(project=project) == 3
+        assert c.vote_weight(project=project) == 1

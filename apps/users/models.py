@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet, Q
 
 from apps.projects.models import Delegation, Project
+from liquidemos.settings import logger
 
 
 class User(AbstractUser):
@@ -10,6 +11,7 @@ class User(AbstractUser):
         return self.delegation_chain(project=project).count() + 1
 
     def delegation_chain(self, project: Project, direction='in') -> QuerySet:
+        logger.info(f'Pass into delegation chain for {project}')
         """
         Query the set of delegations in the database for the project topic
         passed as an argument, and traverses the delegation tree to return a
@@ -20,7 +22,7 @@ class User(AbstractUser):
         """
         assert direction in ('in', 'out')
 
-        voters = [p.user for p in project.vote_set.all()]
+        voters = [p.user for p in project.vote_set.exclude(user=self)]
         qs = Delegation.objects.filter(Q(theme=project.theme),
                                        ~Q(delegator__in=voters))
 
