@@ -137,10 +137,14 @@ class TestVote:
 
         assert user3_vote.weight == 3
 
-        Delegation.objects.create(delegate=user1, delegator=user0,
-                                  theme=project.theme)
+        delegation = Delegation.objects.create(delegate=user1, delegator=user0,
+                                               theme=project.theme)
         user3_vote.refresh_from_db()
         assert user3_vote.weight == 4
+
+        delegation.delete()
+        user3_vote.refresh_from_db()
+        assert user3_vote.weight == 3
 
 
 @pytest.mark.django_db
@@ -305,3 +309,32 @@ class TestDelegation:
         assert a.vote_weight(project=project) == 2
         assert b.vote_weight(project=project) == 3
         assert c.vote_weight(project=project) == 1
+
+    def test_delegation_chain(self, create_user, create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+        ))
+
+        assert (list(user3.delegation_chain(project)) ==
+                list(user3.delegation_chain(project.theme))), \
+            "pass a theme or a project as target parameter should give " \
+            "the same result"
+        assert (list(user3.delegation_chain(project, 'out')) ==
+                list(user3.delegation_chain(project.theme, 'out'))), \
+            "pass a theme or a project as target parameter should give " \
+            "the same result"
+
+        Vote.objects.create(user=user2, project=project)
+        # When a user vote for a project, he cut the delegation chain for this
+        # project, but not for the theme. Since user2 has voted for the
+        # project, user3 now have an empty delegation_chain
+        assert user3.delegation_chain(project).count() == 0
+        assert user3.delegation_chain(project.theme).count() == 2
+
+    def test_delegation_chain_bad_param(self, create_user):
+        user = create_user()
+        with pytest.raises(AssertionError):
+            user.delegation_chain(target=user)

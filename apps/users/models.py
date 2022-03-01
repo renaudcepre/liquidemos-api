@@ -23,10 +23,10 @@ class User(AbstractUser):
         given by users or those given to the user.
 
         """
+        assert direction in ('in', 'out')
+        assert isinstance(target, (Project, Theme))
         project = target if isinstance(target, Project) else None
         theme = target if isinstance(target, Theme) else project.theme
-
-        assert direction in ('in', 'out')
 
         qs = Delegation.objects.filter(theme=theme)
         if project:
