@@ -64,13 +64,11 @@ class VoteAPIView(APIView):
             if vote:
                 vote.upvote = serializer.validated_data['upvote']
                 vote.save()
-                vote.update_vote_weight()
                 serializer = VoteSerializer(vote)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 vote = serializer.save(project=project, user=user,
                                        weight=user.vote_weight(project))
-                vote.update_vote_weight()
                 return Response(serializer.validated_data,
                                 status=status.HTTP_200_OK)
         else:
@@ -82,5 +80,4 @@ class VoteAPIView(APIView):
         user = request.user
         vote = get_object_or_404(Vote, project=project, user=user)
         vote.delete()
-        vote.update_vote_weight()
         return Response(status=status.HTTP_204_NO_CONTENT)

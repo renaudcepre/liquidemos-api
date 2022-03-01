@@ -2,8 +2,8 @@ import pytest
 from allauth.account.models import EmailAddress
 from rest_framework.test import APIClient
 
-from test_projects.utils import log_user
 from tests.tests_users.factories import UserFactory
+from tests.utils import log_user
 
 
 @pytest.fixture()
@@ -41,7 +41,7 @@ def registered_user(create_user):
 def logged_user_and_client(registered_user, api_client):
     def _make(password='test'):
         user = registered_user(password=password)
-        log_user(api_client, user)
+        log_user(api_client, user, password=password)
         return user, api_client
 
     return _make
