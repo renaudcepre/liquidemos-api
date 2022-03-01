@@ -1,7 +1,7 @@
 import pytest
 
 from apps.projects.models import Theme
-from test_projects.factories import ProjectFactory
+from tests.test_projects.factories import ProjectFactory
 
 
 @pytest.fixture()

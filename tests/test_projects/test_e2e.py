@@ -2,7 +2,7 @@ import pytest
 from rest_framework import status
 
 from apps.projects.models import Delegation, Project
-from utils import log_user
+from tests.utils import log_user
 
 pytestmark = pytest.mark.django_db
 
