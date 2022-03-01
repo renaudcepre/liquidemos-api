@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from apps.projects.models import Project, Theme, Vote
@@ -19,6 +20,8 @@ class ThemeSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     score = serializers.SerializerMethodField()
+    user_has_voted = serializers.SerializerMethodField()
+    theme = serializers.StringRelatedField()
 
     def get_score(self, instance):
         total = 0
@@ -26,6 +29,14 @@ class ProjectSerializer(serializers.ModelSerializer):
             total += vote.weight if vote.upvote else -vote.weight
 
         return total
+
+    def get_user_has_voted(self, instance):
+        user = self.context.get('request').user
+        try:
+            vote = user.vote_set.get(project=instance)
+            return 'up' if vote.upvote else 'down'
+        except ObjectDoesNotExist:
+            return None
 
     class Meta:
         model = Project
@@ -35,6 +46,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "theme",
             "created_by",
             'score',
+            'user_has_voted',
         ]
 
         read_only_fields = ("created_by", "slug")
