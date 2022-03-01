@@ -13,9 +13,11 @@ def api_client():
 
 @pytest.fixture
 def create_user():
-    def _make(password='test', **kwargs):
-        user = UserFactory(password=password, **kwargs)
-        return user
+    def _make(number=1, password='test', **kwargs):
+        users = []
+        for _ in range(number):
+            users.append(UserFactory(password=password, **kwargs))
+        return users[0] if number == 1 else users
 
     return _make
 
@@ -24,7 +26,7 @@ def create_user():
 def registered_user(create_user):
     def _make(password='test', number=1):
         users = []
-        for i in range(number):
+        for _ in range(number):
             user = create_user(password=password)
             EmailAddress.objects.create(user=user,
                                         email=user.email,

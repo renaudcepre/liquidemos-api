@@ -10,12 +10,14 @@ from apps.projects.models import *
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture()
 def project_tree(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
         call_command('loaddata', 'test_projects.json')
 
 
+@pytest.mark.django_db
 class TestProject:
     def test_project_model(self, create_project):
         p = create_project(name='test project')
@@ -29,7 +31,6 @@ class TestProject:
         assert p.parents().count() == 0
         assert p.childs().count() == 0
 
-    @pytest.mark.django_db
     def test_tree_direct_childs(self, project_tree):
         # get the top of the tree
         root = Project.objects.get(depth=0)
@@ -43,7 +44,6 @@ class TestProject:
             assert child.path == f'0/{idx}'
             assert child.depth == 1
 
-    @pytest.mark.django_db
     def test_tree_grand_childs(self, project_tree):
         childs = Project.objects.filter(depth=2)
 
@@ -55,13 +55,11 @@ class TestProject:
             assert child.path.endswith(str(idx))
             assert child.depth == 2
 
-    @pytest.mark.django_db
     def test_retrieve_parents(self, project_tree):
         child = Project.objects.last()
         assert child.parents().count() == child.depth == 3
         assert child.path.startswith(child.parent.path)
 
-    @pytest.mark.django_db
     def test_concurency_group(self, project_tree):
         childs = Project.objects.filter(depth=1)
         concurency_group = AlternativeGroup.objects.create()
@@ -72,7 +70,6 @@ class TestProject:
 
         assert concurency_group.project_set.count() == 3
 
-    @pytest.mark.django_db
     def test_include_self(self, project_tree):
         root: Project = Project.objects.get(depth=0)
 
@@ -84,8 +81,8 @@ class TestProject:
         assert child.parents(include_self=True).contains(child)
 
 
+@pytest.mark.django_db
 class TestVote:
-    @pytest.mark.django_db
     def test_vote(self, admin_user, create_user, create_project):
         project = create_project(created_by=admin_user)
         user = create_user()
@@ -101,6 +98,50 @@ class TestVote:
         assert project.downvotes == 1
 
         assert vote.user == user
+
+    def test_votes_updates_when_user_vote(self, create_user, create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+            Delegation(delegate=user1, delegator=user0, theme=project.theme),
+        ))
+        user3_vote = Vote(user=user3, project=project)
+        user3_vote.save()
+
+        assert user3_vote.weight == 4
+
+        user2_vote = Vote(user=user2, project=project)
+        user2_vote.save()
+        user3_vote.refresh_from_db()
+
+        assert user3_vote.weight == 1
+        assert user2_vote.weight == 3
+
+        user2_vote.delete()
+        user3_vote.refresh_from_db()
+
+        assert user3_vote.weight == 4
+
+    def test_votes_updates_when_user_delegate(self, create_user,
+                                              create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+        ))
+        user3_vote = Vote(user=user3, project=project)
+        user3_vote.save()
+
+        assert user3_vote.weight == 3
+
+        Delegation.objects.create(delegate=user1, delegator=user0,
+                                  theme=project.theme)
+        user3_vote.refresh_from_db()
+        assert user3_vote.weight == 4
+
 
 @pytest.mark.django_db
 class TestDelegation:
@@ -137,7 +178,6 @@ class TestDelegation:
 
         assert delegate.incoming_delegations.count() == 2
 
-    @pytest.mark.django_db
     def test_recurse(self, create_user):
         theme = Theme.objects.create(name='THEME')
         other_theme = Theme.objects.create(name='OTHER_THEME')
@@ -178,7 +218,6 @@ class TestDelegation:
         assert delegate.delegation_chain(project, 'out').count() == 0
         assert last_delegator.delegation_chain(project, 'out').count() == 1
 
-    @pytest.mark.django_db
     def test_simple_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
@@ -197,7 +236,6 @@ class TestDelegation:
 
         assert delegate.delegation_chain(project=project).count() == 1
 
-    @pytest.mark.django_db
     def test_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
@@ -238,7 +276,6 @@ class TestDelegation:
                 b.vote_weight(project=project) ==
                 c.vote_weight(project=project))
 
-    @pytest.mark.django_db
     def test_cycling_cutted_by_vote(self, create_user):
         theme = Theme.objects.create(name='THEME')
         project = Project.objects.create(name='TEST',
