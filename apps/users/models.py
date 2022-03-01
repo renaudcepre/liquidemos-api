@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet, Q
 
-from apps.projects.models import Delegation, Project
+from apps.projects.models import Delegation, Project, Theme
 from liquidemos.settings import logger
 
 
 class User(AbstractUser):
 
     def vote_weight(self, project: Project):
-        return self.delegation_chain(project=project).count() + 1
+        return self.delegation_chain(target=project).count() + 1
 
-    def delegation_chain(self, project: Project, direction='in') -> QuerySet:
-        logger.info(f'Pass into delegation chain for {project}')
+    def delegation_chain(self, target: Project | Theme,
+                         direction='in') -> QuerySet:
+        logger.info(f'Pass into delegation chain for {target}')
         """
         Query the set of delegations in the database for the project topic
         passed as an argument, and traverses the delegation tree to return a
@@ -20,11 +23,15 @@ class User(AbstractUser):
         given by users or those given to the user.
 
         """
+        project = target if isinstance(target, Project) else None
+        theme = target if isinstance(target, Theme) else project.theme
+
         assert direction in ('in', 'out')
 
-        voters = [p.user for p in project.vote_set.exclude(user=self)]
-        qs = Delegation.objects.filter(Q(theme=project.theme),
-                                       ~Q(delegator__in=voters))
+        qs = Delegation.objects.filter(theme=theme)
+        if project:
+            voters = [p.user for p in project.vote_set.exclude(user=self)]
+            qs = qs.filter(~Q(delegator__in=voters))
 
         if direction == 'in':
             qs = qs.values_list('delegator__pk', 'delegate__pk', 'pk').exclude(

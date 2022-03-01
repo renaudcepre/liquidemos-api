@@ -234,7 +234,7 @@ class TestDelegation:
                                   delegate=delegator,
                                   delegator=delegate)
 
-        assert delegate.delegation_chain(project=project).count() == 1
+        assert delegate.delegation_chain(target=project).count() == 1
 
     def test_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
@@ -268,7 +268,7 @@ class TestDelegation:
 
         Delegation.objects.bulk_create(delegations)
 
-        a_result = a.delegation_chain(project=project)
+        a_result = a.delegation_chain(target=project)
         assert a_result.count() == 8
         assert solo_user.vote_weight(project=project) == 1
 

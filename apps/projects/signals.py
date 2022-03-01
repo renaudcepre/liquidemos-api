@@ -29,8 +29,13 @@ def update_delegates_votes_on_vote(sender, instance, **kwargs):
 @receiver(post_save, sender=Delegation)
 @receiver(post_delete, sender=Delegation)
 def update_delegates_vote_on_delegation_creation(sender, instance, **kwargs):
-    delegate = instance.delegate
-    votes = Vote.objects.filter(user=delegate, project__theme=instance.theme)
+    delegations = instance.delegate.delegation_chain(target=instance.theme,
+                                                     direction='out')
+    delegates = [d.delegate for d in delegations]
+
+    votes = Vote.objects.filter(user__in=delegates,
+                                project__theme=instance.theme)
+
     for vote in votes:
         vote.weight = vote.user.vote_weight(vote.project)
     Vote.objects.bulk_update(votes, fields=('weight',))
