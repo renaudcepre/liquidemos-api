@@ -6,4 +6,4 @@ class ProjectsConfig(AppConfig):
     name = 'apps.projects'
 
     def ready(self):
-        pass
+        signals = __import__('apps.projects.signals')
