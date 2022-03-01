@@ -12,19 +12,17 @@ def get_votes_to_update(vote):
 
 @receiver(post_save, sender=Vote)
 def update_delegates_votes(sender, instance, **kwargs):
-    weight = instance.weight
     votes = get_votes_to_update(instance)
     for vote in votes:
-        vote.weight -= weight
+        vote.weight -= instance.weight
     sender.objects.bulk_update(votes, fields=('weight',))
 
 
 @receiver(post_delete, sender=Vote)
 def update_delegates_votes_on_vote(sender, instance, **kwargs):
-    weight = instance.weight
     votes = get_votes_to_update(instance)
     for vote in votes:
-        vote.weight += weight
+        vote.weight += instance.weight
     sender.objects.bulk_update(votes, fields=('weight',))
 
 
