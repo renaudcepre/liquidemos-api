@@ -8,7 +8,7 @@ class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = ("upvote", "weight")
-        read_only_fields = ('project', "weight")
+        read_only_fields = ("weight",)
         extra_kwargs = {'upvote': {'required': True}}
 
 
