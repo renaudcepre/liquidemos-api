@@ -14,7 +14,7 @@ class TestVotes:
         return f"{self.endpoint}/{project.slug}/vote"
 
     @pytest.mark.django_db
-    def test_test(self, create_project, registered_user, api_client):
+    def test_vote_weights(self, create_project, registered_user, api_client):
         user, user2, user3 = registered_user(number=3)
         project, project2 = create_project(number=2, created_by=user)
         Delegation.objects.bulk_create((
