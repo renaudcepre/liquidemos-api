@@ -11,11 +11,17 @@ def get_votes_to_update(vote):
 
 
 @receiver(post_save, sender=Vote)
-def update_delegates_votes(sender, instance, **kwargs):
-    votes = get_votes_to_update(instance)
-    for vote in votes:
-        vote.weight -= instance.weight
-    sender.objects.bulk_update(votes, fields=('weight',))
+def update_delegates_votes(sender, instance, created, **kwargs):
+    """
+    When a user votes for a project, all votes made by users who have been
+    delegated for the topic of that project lose the weight of the vote of
+    the user who voted.
+    """
+    if created:
+        votes = get_votes_to_update(instance)
+        for vote in votes:
+            vote.weight -= instance.weight
+        sender.objects.bulk_update(votes, fields=('weight',))
 
 
 @receiver(post_delete, sender=Vote)
@@ -26,9 +32,8 @@ def update_delegates_votes_on_vote(sender, instance, **kwargs):
     sender.objects.bulk_update(votes, fields=('weight',))
 
 
-@receiver(post_save, sender=Delegation)
-@receiver(post_delete, sender=Delegation)
-def update_delegates_vote_on_delegation_creation(sender, instance, **kwargs):
+@receiver((post_delete, post_save), sender=Delegation)
+def update_delegates_vote_on_delegation(instance, **kwargs):
     delegations = instance.delegate.delegation_chain(target=instance.theme,
                                                      direction='out')
     delegates = [d.delegate for d in delegations]

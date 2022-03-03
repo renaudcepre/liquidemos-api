@@ -36,6 +36,8 @@ class ThemeViewSet(viewsets.ModelViewSet):
 
 # noinspection PyMethodMayBeStatic
 class VoteAPIView(APIView):
+    """ A view that provides possibity to the current to vote for a project.
+        If a get request is made on <project>/vote, the endpoint return """
     serializer_class = VoteSerializer
     permission_classes = [IsAuthenticated]
 
