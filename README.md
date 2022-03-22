@@ -39,6 +39,13 @@ path, and it gives it the parent path. I also store the node depth as an integer
 certain depth
 (e.g: query just the immediate children).
 
+The maximum number of childs for a node is really huge: I encode the node_id in a custom base based on a charset,
+see `encoder.py`. The maximum depht of the tree is limited by the maximum lenght of the CharField used, it also depends
+of the number of childs, since a child can use more characters (e.g: `0/FFFFFF/`)
+
+*[django-treebeard](https://django-treebeard.readthedocs.io/en/latest/api.html) is a package that provide a good
+implentation of MPT.*
+
 ## Auth
 
 The project use authentication with JWT, by using `django-allauth`, and `dj-rest-auth` packages. See tests.
