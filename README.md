@@ -8,7 +8,7 @@ This project was started initially to level my skills in Django and the DRF. I'v
 democracy based project manager for a long time, and I thought that it will be a good exercise to try doing it with
 Django. As the purpose of the project is only the back-end, I just created a REST API.
 
-## Liquid Democraty
+## Liquid Democracy
 
 The idea of liquid democracy, applied to politics, take its roots in direct democracy, A system where people vote
 directly for each law, or projects. This system doesn't work any more as soon as there are too many things to vote for:
