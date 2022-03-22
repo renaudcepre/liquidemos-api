@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.projects.models import Project, Theme
+from apps.projects.models import Project, Theme, Vote
 from apps.projects.serializers import ProjectSerializer, ThemeSerializer, \
     VoteSerializer
 
@@ -34,7 +34,10 @@ class ThemeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+# noinspection PyMethodMayBeStatic
 class VoteAPIView(APIView):
+    """ A view that provides possibity to the current to vote for a project.
+        If a get request is made on <project>/vote, the endpoint return """
     serializer_class = VoteSerializer
     permission_classes = [IsAuthenticated]
 
@@ -60,37 +63,23 @@ class VoteAPIView(APIView):
 
         serializer = VoteSerializer(data=request.data)
         if serializer.is_valid():
-            upvote = serializer.validated_data['upvote']
             if vote:
-                vote.upvote = upvote
-                vote.weight = user.vote_weight(project)
+                vote.upvote = serializer.validated_data['upvote']
                 vote.save()
                 serializer = VoteSerializer(vote)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                serializer.save(project=project, user=user,
-                                weight=user.vote_weight(project))
-                serializer = VoteSerializer(vote)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                vote = serializer.save(project=project, user=user,
+                                       weight=user.vote_weight(project))
+                return Response(serializer.validated_data,
+                                status=status.HTTP_200_OK)
         else:
             return Response(data=serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-    # user = self.request.user
-    # project_slug = self.kwargs.get('slug')
-    # project = get_object_or_404(Project, slug=project_slug)
-    # upvote = serializer.validated_data['upvote']
-    #
-    # try:
-    #     vote = project.vote_set.get(user=user)
-    # except ObjectDoesNotExist:
-    #     vote = None
-    #
-    # if vote and vote.upvote == upvote:
-    #     raise ValidationError(
-    #         f"You have already given an {'up' if upvote else ''}vote on this project")
-    # elif vote:
-    #     vote.upvote = upvote
-    #     vote.save()
-    # else:
-    #     serializer.save(project=project, user=user)
+    def delete(self, request, slug):
+        project = get_object_or_404(Project, slug=slug)
+        user = request.user
+        vote = get_object_or_404(Vote, project=project, user=user)
+        vote.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import uuid
 
 import pytest
 from django.core.management import call_command
@@ -12,39 +11,13 @@ from apps.projects.models import *
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def create_user(db, django_user_model):
-    """Return a closure that create a user with random values and default password."""
-
-    def _make_user(**kwargs):
-        kwargs['password'] = 'test_password'
-        if 'username' not in kwargs:
-            kwargs['username'] = str(uuid.uuid4())
-        return django_user_model.objects.create_user(**kwargs)
-
-    return _make_user
-
-
-@pytest.fixture
-def create_project(db, create_user):
-    """Return a closure that create a project with random values."""
-
-    def _make_project(**kwargs):
-        if 'name' not in kwargs:
-            kwargs['name'] = str(uuid.uuid4())
-        if 'created_by' not in kwargs:
-            kwargs['created_by'] = create_user()
-        return Project.objects.create(**kwargs)
-
-    return _make_project
-
-
 @pytest.fixture()
 def project_tree(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
         call_command('loaddata', 'test_projects.json')
 
 
+@pytest.mark.django_db
 class TestProject:
     def test_project_model(self, create_project):
         p = create_project(name='test project')
@@ -58,7 +31,6 @@ class TestProject:
         assert p.parents().count() == 0
         assert p.childs().count() == 0
 
-    @pytest.mark.django_db
     def test_tree_direct_childs(self, project_tree):
         # get the top of the tree
         root = Project.objects.get(depth=0)
@@ -72,7 +44,6 @@ class TestProject:
             assert child.path == f'0/{idx}'
             assert child.depth == 1
 
-    @pytest.mark.django_db
     def test_tree_grand_childs(self, project_tree):
         childs = Project.objects.filter(depth=2)
 
@@ -84,13 +55,11 @@ class TestProject:
             assert child.path.endswith(str(idx))
             assert child.depth == 2
 
-    @pytest.mark.django_db
     def test_retrieve_parents(self, project_tree):
         child = Project.objects.last()
         assert child.parents().count() == child.depth == 3
         assert child.path.startswith(child.parent.path)
 
-    @pytest.mark.django_db
     def test_concurency_group(self, project_tree):
         childs = Project.objects.filter(depth=1)
         concurency_group = AlternativeGroup.objects.create()
@@ -101,7 +70,6 @@ class TestProject:
 
         assert concurency_group.project_set.count() == 3
 
-    @pytest.mark.django_db
     def test_include_self(self, project_tree):
         root: Project = Project.objects.get(depth=0)
 
@@ -113,8 +81,8 @@ class TestProject:
         assert child.parents(include_self=True).contains(child)
 
 
+@pytest.mark.django_db
 class TestVote:
-    @pytest.mark.django_db
     def test_vote(self, admin_user, create_user, create_project):
         project = create_project(created_by=admin_user)
         user = create_user()
@@ -131,13 +99,61 @@ class TestVote:
 
         assert vote.user == user
 
+    def test_votes_updates_when_user_vote(self, create_user, create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+            Delegation(delegate=user1, delegator=user0, theme=project.theme),
+        ))
+        user3_vote = Vote(user=user3, project=project)
+        user3_vote.save()
 
+        assert user3_vote.weight == 4
+
+        user2_vote = Vote(user=user2, project=project)
+        user2_vote.save()
+        user3_vote.refresh_from_db()
+
+        assert user3_vote.weight == 1
+        assert user2_vote.weight == 3
+
+        user2_vote.delete()
+        user3_vote.refresh_from_db()
+
+        assert user3_vote.weight == 4
+
+    def test_votes_updates_when_user_delegate(self, create_user,
+                                              create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+        ))
+        user3_vote = Vote(user=user3, project=project)
+        user3_vote.save()
+
+        assert user3_vote.weight == 3
+
+        delegation = Delegation.objects.create(delegate=user1, delegator=user0,
+                                               theme=project.theme)
+        user3_vote.refresh_from_db()
+        assert user3_vote.weight == 4
+
+        delegation.delete()
+        user3_vote.refresh_from_db()
+        assert user3_vote.weight == 3
+
+
+@pytest.mark.django_db
 class TestDelegation:
     def test_delegation(self, create_user):
         theme = Theme.objects.create(name='THEME')
-        project = Project.objects.create(name='TEST',
-                                         theme=theme,
-                                         created_by=create_user())
+        Project.objects.create(name='TEST',
+                               theme=theme,
+                               created_by=create_user())
         delegate = create_user(username="delegate")
         delegator = create_user(username="delegator")
 
@@ -222,7 +238,7 @@ class TestDelegation:
                                   delegate=delegator,
                                   delegator=delegate)
 
-        assert delegate.delegation_chain(project=project).count() == 1
+        assert delegate.delegation_chain(target=project).count() == 1
 
     def test_cycling(self, create_user):
         theme = Theme.objects.create(name='THEME')
@@ -256,9 +272,9 @@ class TestDelegation:
 
         Delegation.objects.bulk_create(delegations)
 
-        a_result = a.delegation_chain(project=project)
+        a_result = a.delegation_chain(target=project)
         assert a_result.count() == 8
-        assert solo_user.vote_weight(project=project) == 0
+        assert solo_user.vote_weight(project=project) == 1
 
         assert (a.vote_weight(project=project) ==
                 b.vote_weight(project=project) ==
@@ -290,6 +306,35 @@ class TestDelegation:
         # b vote for the project.
         Vote.objects.create(project=project, user=b)
 
-        assert a.vote_weight(project=project) == 1
-        assert b.vote_weight(project=project) == 2
-        assert c.vote_weight(project=project) == 0
+        assert a.vote_weight(project=project) == 2
+        assert b.vote_weight(project=project) == 3
+        assert c.vote_weight(project=project) == 1
+
+    def test_delegation_chain(self, create_user, create_project):
+        project = create_project()
+        user0, user1, user2, user3 = create_user(number=4)
+        Delegation.objects.bulk_create((
+            Delegation(delegate=user3, delegator=user2, theme=project.theme),
+            Delegation(delegate=user2, delegator=user1, theme=project.theme),
+        ))
+
+        assert (list(user3.delegation_chain(project)) ==
+                list(user3.delegation_chain(project.theme))), \
+            "pass a theme or a project as target parameter should give " \
+            "the same result"
+        assert (list(user3.delegation_chain(project, 'out')) ==
+                list(user3.delegation_chain(project.theme, 'out'))), \
+            "pass a theme or a project as target parameter should give " \
+            "the same result"
+
+        Vote.objects.create(user=user2, project=project)
+        # When a user vote for a project, he cut the delegation chain for this
+        # project, but not for the theme. Since user2 has voted for the
+        # project, user3 now have an empty delegation_chain
+        assert user3.delegation_chain(project).count() == 0
+        assert user3.delegation_chain(project.theme).count() == 2
+
+    def test_delegation_chain_bad_param(self, create_user):
+        user = create_user()
+        with pytest.raises(AssertionError):
+            user.delegation_chain(target=user)

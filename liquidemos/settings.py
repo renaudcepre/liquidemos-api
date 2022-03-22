@@ -157,7 +157,7 @@ LOGGING = {
     },
     'formatters': {
         'default': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} :: {message}',
             'datefmt': '%Y-%m-%d %H:%M',
             'style': '{',
         },

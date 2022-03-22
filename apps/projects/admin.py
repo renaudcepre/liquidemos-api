@@ -52,8 +52,19 @@ class ProjectAdmin(admin.ModelAdmin):
     filter_horizontal = ('tags',)
 
 
+@admin.register(Delegation)
+class DelegationAdmin(admin.ModelAdmin):
+    # list_per_page = 100
+    list_filter = ('theme',)
+    list_display = ('theme', 'delegate', 'delegator')
+
+
+@admin.register(Vote)
+class VoteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'project', 'weight')
+    search_fields = ('project__name', 'user__username', 'upvote')
+
+
 admin.site.register(Tag)
 admin.site.register(AlternativeGroup)
-admin.site.register(Vote)
 admin.site.register(Theme)
-admin.site.register(Delegation)

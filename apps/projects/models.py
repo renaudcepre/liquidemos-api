@@ -55,7 +55,8 @@ class Vote(DatedModelMixin, models.Model):
                                     name='unique vote')]
 
     def save(self, *args, **kwargs):
-        # self.weight = self.user.vote_weight(self.project.theme)
+        if not self.pk:
+            self.weight = self.user.vote_weight(self.project)
         super().save(*args, **kwargs)
 
     def __str__(self):
