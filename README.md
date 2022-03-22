@@ -59,3 +59,27 @@ As I was expecting, building this project with a SQL database is pretty hard, at
 it really efficient, it will be interesting to switch to a graph database like Neo4j.
 
 This project allowed me to see the limits of such a system, and to implement something interesting with Django.
+
+# Usage
+
+```bash
+# Clone and create the environmemt
+git clone -b develop https://github.com/renaudcepre/liquidemos-api
+cd liquidemos-api
+python3 -m venv venv
+source venv/bin/activate
+# Install deps
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+# Initialize the database
+python3 manage.py migrate
+# Create a superuser (with a Allauth email) (username: admin, pass: admin)
+python3 manage.py createdevsuperuser # see apps/users/management
+# Run tests
+pytest
+# run server
+python3 manage.py runserver   
+```
+
+Login using the DRF browsable API, you can now start creating any project, vote for it, create other users, delegate
+votes form a user to another, and see the weight of the votes updating accordingly. 
