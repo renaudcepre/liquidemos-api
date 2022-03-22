@@ -39,11 +39,11 @@ path, and it gives it the parent path. I also store the node depth as an integer
 certain depth
 (e.g: query just the immediate children).
 
-# Authentication
+## Auth
 
 The project use authentication with JWT, by using `django-allauth`, and `dj-rest-auth` packages. See tests.
 
-# Project on pause
+## Project on pause
 
 At the time of writing this, I am preparing to spend a month in Benin on a trip, and to search for a job on my return,
 so the project is paused.
